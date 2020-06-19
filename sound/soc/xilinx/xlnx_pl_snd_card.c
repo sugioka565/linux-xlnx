@@ -322,9 +322,8 @@ static int xlnx_snd_probe(struct platform_device *pdev)
 		struct device_node *pnode = of_parse_phandle(node[i],
 							     "xlnx,snd-pcm", 0);
 		if (!pnode) {
-			dev_err(card->dev, "platform node not found\n");
 			of_node_put(pnode);
-			return -ENODEV;
+			continue;
 		}
 
 		/*

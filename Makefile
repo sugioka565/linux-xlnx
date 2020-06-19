@@ -10,6 +10,11 @@ NAME = Kleptomaniac Octopus
 # More info can be located in ./README
 # Comments in this file are targeted only to the developer, do not
 # expect to learn how to build the kernel reading this file.
+ARCH = arm
+CROSS_COMPILE = arm-linux-gnueabihf-
+export LOAD_ADDR = 0x00008000
+export INSTALL_MOD_PATH = $(shell pwd)/../rootfs
+export INSTALL_PATH = $(shell pwd)/../rootfs/boot
 
 # That's our default target when none is given on the command line
 PHONY := _all
@@ -1808,8 +1813,12 @@ quiet_cmd_rmfiles = $(if $(wildcard $(rm-files)),CLEAN   $(wildcard $(rm-files))
 
 # Run depmod only if we have System.map and depmod is executable
 quiet_cmd_depmod = DEPMOD  $(KERNELRELEASE)
-      cmd_depmod = $(CONFIG_SHELL) $(srctree)/scripts/depmod.sh $(DEPMOD) \
-                   $(KERNELRELEASE)
+    cmd_depmod = \
+	if [ -r System.map -a -x $(DEPMOD) ]; then                          \
+		$(DEPMOD) -ae -F System.map                                     \
+		$(if $(strip $(INSTALL_MOD_PATH)), -b $(INSTALL_MOD_PATH) )     \
+		$(KERNELRELEASE);                                               \
+	fi
 
 # read saved command lines for existing targets
 existing-targets := $(wildcard $(sort $(targets)))
