@@ -12,7 +12,7 @@ NAME = Kleptomaniac Octopus
 # expect to learn how to build the kernel reading this file.
 ARCH = arm
 CROSS_COMPILE = arm-linux-gnueabihf-
-export LOAD_ADDR = 0x00008000
+export LOADADDR = 0x200000
 export INSTALL_MOD_PATH = $(shell pwd)/../rootfs
 export INSTALL_PATH = $(shell pwd)/../rootfs/boot
 
