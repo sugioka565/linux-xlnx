@@ -2,14 +2,32 @@
 /dts-v1/;
 #include "zynq-7000.dtsi"
 #include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/interrupt-controller/irq.h>
+#include <dt-bindings/leds/common.h>
+#include <dt-bindings/input/input.h>
+#include <dt-bindings/input/gpio-keys.h>
 
 / {
-	model = "Digilent Zybo Z7 board";
+	model = "HelloTechno HT-PA20 board";
 	compatible = "xlnx,zynq-7000";
 
 	aliases {
 		ethernet0 = &gem0;
-		serial0 = &uart1;
+		i2c0 = &i2c0;
+		i2c1 = &i2c1;
+		serial0 = &uart0;
+		serial1 = &uart1;
+		serial2 = &axi_rs485_0;
+		serial3 = &axi_rs485_1;
+		serial4 = &axi_uart16550_printer;
+		serial5 = &axi_uart16550_FeliCa;
+		serial6 = &axi_uart16550_MagCard;
+		serial7 = &axi_uart16550_UPS;
+		serial8 = &axi_uart16550_JVM1;
+		serial9 = &axi_uart16550_JVM2;
+		serial10 = &axi_uart16550_MDB;
+		spi0 = &qspi;
+		flash0 = &flash0;
 	};
 
 	cpus {
@@ -20,28 +38,196 @@
 
 	memory@0 {
 		device_type = "memory";
-		reg = <0x0 0x3f800000>;
+		reg = <0x0 0x20000000>;
 	};
 
 	chosen {
-		bootargs = "console=ttyPS0,115200 root=/dev/mmcblk0p2 rw rootwait";
+		bootargs = "console=ttyPS0,115200 root=/dev/mmcblk1p1 rw rootwait";
 		stdout-path = "serial0:115200n8";
 	};
-	// ps_fb: fb@3f800000 {
-	// 	compatible = "simple-framebuffer";
-	// 	reg = <0x3f800000 (2048 * 720 * 4)>;
-	// 	width = <1280>;
-	// 	height = <720>;
-	// 	stride = <(2048 * 4)>;
-	// 	format = "x8r8g8b8";
-	// };
-	fb0: fb@3f800000 {
+	fb0: fb0 {
 		compatible = "xlnx,axi-dvi-1.00";
 		reg = <0x40000000 0x10000>;
-		fb-addr = <0x3f800000 0x00800000>;
-		phys-size = <1280 720>;
-		resolution = <1280 720>;
+		phys-size = <1024 600>;
+		resolution = <1024 600>;
 		virtual-resolution = <2048 720>;
+	};
+	backlight_lcd: backlight_lcd {
+		compatible = "pwm-backlight";
+		pwms = <&pwm_backlight 0 5000000>; /* PWM Period = 5msec (200Hz) */
+	};
+	buzzer: buzzer {
+		compatible = "pwm-beeper";
+		pwms = <&pwm_buzz 0 2500000>;
+		beeper-hz = <4000>;
+	};
+	matrix-keypad {
+		status = "okay";
+		compatible = "gpio-matrix-keypad";
+		debounce-delay-ms = <5>;
+		col-scan-delay-us = <1>;
+		linux,no-autorepeat;
+		drive-inactive-cols;
+		col-gpios = <
+			&gpio0 86 0
+			&gpio0 87 0
+			&gpio0 88 0
+			&gpio0 89 0
+			>;
+		row-gpios = <
+			&gpio0 54 0
+			&gpio0 55 0
+			&gpio0 56 0
+			&gpio0 57 0
+			&gpio0 58 0
+			>;
+		interrupt-parent = <&gpio0>;
+		interrupts = <
+			54 IRQ_TYPE_EDGE_FALLING
+			55 IRQ_TYPE_EDGE_FALLING
+			56 IRQ_TYPE_EDGE_FALLING
+			57 IRQ_TYPE_EDGE_FALLING
+			58 IRQ_TYPE_EDGE_FALLING
+			>;
+		linux,keymap = <
+			MATRIX_KEY(0, 0, KEY_1) /* 1 */
+			MATRIX_KEY(0, 1, KEY_2) /* 2 */
+			MATRIX_KEY(0, 2, KEY_3) /* 3 */
+			MATRIX_KEY(0, 3, KEY_F) /* 未使用 */
+			MATRIX_KEY(1, 0, KEY_4) /* 4 */
+			MATRIX_KEY(1, 1, KEY_5) /* 5 */
+			MATRIX_KEY(1, 2, KEY_A) /* 精算 */
+			MATRIX_KEY(1, 3, KEY_G) /* 未使用 */
+			MATRIX_KEY(2, 0, KEY_B) /* 取消 */
+			MATRIX_KEY(2, 1, KEY_6) /* 6 */
+			MATRIX_KEY(2, 2, KEY_7) /* 7 */
+			MATRIX_KEY(2, 3, KEY_H) /* 未使用 */
+			MATRIX_KEY(3, 0, KEY_8) /* 8 */
+			MATRIX_KEY(3, 1, KEY_9) /* 9 */
+			MATRIX_KEY(3, 2, KEY_0) /* 0 */
+			MATRIX_KEY(3, 3, KEY_I) /* 未使用 */
+			MATRIX_KEY(4, 0, KEY_C) /* 領収証 */
+			MATRIX_KEY(4, 1, KEY_D) /* 駐車証明 */
+			MATRIX_KEY(4, 2, KEY_E) /* 未使用 */
+			MATRIX_KEY(4, 3, KEY_J) /* 未使用 */
+			>;
+	};
+	gpio-keys {
+		compatible = "gpio-keys";
+		din0 {
+			label = "din0";
+			gpios = <&gpio0 62 GPIO_ACTIVE_HIGH>;
+			linux,code = <KEY_K>;
+			wakeup-source;
+			wakeup-event-action = <EV_ACT_ANY>;
+		};
+		din1 {
+			label = "din1";
+			gpios = <&gpio0 63 GPIO_ACTIVE_HIGH>;
+			linux,code = <KEY_L>;
+			wakeup-source;
+			wakeup-event-action = <EV_ACT_ANY>;
+		};
+		din2 {
+			label = "din2";
+			gpios = <&gpio0 64 GPIO_ACTIVE_HIGH>;
+			linux,code = <KEY_M>;
+			wakeup-source;
+			wakeup-event-action = <EV_ACT_ANY>;
+		};
+		din3 {
+			label = "din3";
+			gpios = <&gpio0 65 GPIO_ACTIVE_HIGH>;
+			linux,code = <KEY_N>;
+			wakeup-source;
+			wakeup-event-action = <EV_ACT_ANY>;
+		};
+		din4 {
+			label = "din4";
+			gpios = <&gpio0 66 GPIO_ACTIVE_HIGH>;
+			linux,code = <KEY_O>;
+			wakeup-source;
+			wakeup-event-action = <EV_ACT_ANY>;
+		};
+		din5 {
+			label = "din5";
+			gpios = <&gpio0 67 GPIO_ACTIVE_HIGH>;
+			linux,code = <KEY_P>;
+			wakeup-source;
+			wakeup-event-action = <EV_ACT_ANY>;
+		};
+		din6 {
+			label = "din6";
+			gpios = <&gpio0 68 GPIO_ACTIVE_HIGH>;
+			linux,code = <KEY_Q>;
+			wakeup-source;
+			wakeup-event-action = <EV_ACT_ANY>;
+		};
+		din7 {
+			label = "din7";
+			gpios = <&gpio0 69 GPIO_ACTIVE_HIGH>;
+			linux,code = <KEY_R>;
+			wakeup-source;
+			wakeup-event-action = <EV_ACT_ANY>;
+		};
+		// human {
+		// 	label = "human";
+		// 	gpios = <&gpio0 70 GPIO_ACTIVE_HIGH>;
+		// 	linux,code = <KEY_S>;
+		// 	wakeup-source;
+		// 	wakeup-event-action = <EV_ACT_ANY>;
+		// };
+		// door {
+		// 	label = "door";
+		// 	gpios = <&gpio0 71 GPIO_ACTIVE_HIGH>;
+		// 	linux,code = <KEY_T>;
+		// 	wakeup-source;
+		// 	wakeup-event-action = <EV_ACT_ANY>;
+		// };
+	};
+	leds {
+		compatible = "gpio-leds";
+		led0 {
+			gpios = <&gpio0 94 GPIO_ACTIVE_HIGH>;
+			linux,default-trigger = "heartbeat";
+			// function = LED_FUNCTION_HEARTBEAT;
+		};
+		led1 {
+			gpios = <&gpio0 95 GPIO_ACTIVE_HIGH>;
+			linux,default-trigger = "cpu";
+			// function = LED_FUNCTION_CPU;
+		};
+		led2 {
+			gpios = <&gpio0 96 GPIO_ACTIVE_HIGH>;
+			linux,default-trigger = "mmc0";
+			// function = LED_FUNCTION_DISK;
+		};
+		led3 { gpios = <&gpio0  97 GPIO_ACTIVE_HIGH>; };
+		led4 { gpios = <&gpio0  98 GPIO_ACTIVE_HIGH>; };
+		led5 { gpios = <&gpio0  99 GPIO_ACTIVE_HIGH>; };
+		led6 { gpios = <&gpio0 100 GPIO_ACTIVE_HIGH>; };
+		led7 { gpios = <&gpio0 101 GPIO_ACTIVE_HIGH>; };
+		kbled0 { gpios = <&gpio0 102 GPIO_ACTIVE_HIGH>; };
+		kbled1 { gpios = <&gpio0 103 GPIO_ACTIVE_HIGH>; };
+		kbled2 { gpios = <&gpio0 104 GPIO_ACTIVE_HIGH>; };
+		kbled3 { gpios = <&gpio0 105 GPIO_ACTIVE_HIGH>; };
+		kbled4 { gpios = <&gpio0 106 GPIO_ACTIVE_HIGH>; };
+		extled0 { gpios = <&tca6416 0 GPIO_ACTIVE_LOW>; };
+		extled1 { gpios = <&tca6416 1 GPIO_ACTIVE_LOW>; };
+		extled2 { gpios = <&tca6416 2 GPIO_ACTIVE_LOW>; };
+		extled3 { gpios = <&tca6416 3 GPIO_ACTIVE_LOW>; };
+		extled4 { gpios = <&tca6416 4 GPIO_ACTIVE_LOW>; };
+		extled5 { gpios = <&tca6416 5 GPIO_ACTIVE_LOW>; };
+		extled6 { gpios = <&tca6416 6 GPIO_ACTIVE_LOW>; };
+		extled7 { gpios = <&tca6416 7 GPIO_ACTIVE_LOW>; };
+		relay0 { gpios = <&tca6416 8 GPIO_ACTIVE_LOW>; };
+		relay1 { gpios = <&tca6416 9 GPIO_ACTIVE_LOW>; };
+		relay2 { gpios = <&tca6416 10 GPIO_ACTIVE_LOW>; };
+		relay3 { gpios = <&tca6416 11 GPIO_ACTIVE_LOW>; };
+		relay4 { gpios = <&tca6416 12 GPIO_ACTIVE_LOW>; };
+		relay5 { gpios = <&tca6416 13 GPIO_ACTIVE_LOW>; };
+		relay6 { gpios = <&tca6416 14 GPIO_ACTIVE_LOW>; };
+		relay7 { gpios = <&tca6416 15 GPIO_ACTIVE_LOW>; };
 	};
 	usb_phy0: usb_phy@0 {
 		compatible = "ulpi-phy";
@@ -55,44 +241,17 @@
 		clock-frequency = <18432000>;
 		compatible = "fixed-clock";
 	};
-	rs485_clk: rs485_clk {
-		#clock-cells = <0>;
-		clock-frequency = <50000000>;
-		compatible = "fixed-clock";
-	};
 	amba_pl: amba_pl {
 		#address-cells = <1>;
 		#size-cells = <1>;
 		compatible = "simple-bus";
 		ranges ;
-		audio_formatter_0: audio_formatter@43c10000 {
-			clock-names = "s_axi_lite_aclk", "m_axis_mm2s_aclk", "aud_mclk";
-			clocks = <&clkc 15>, <&clkc 15>, <&clkc 16>;
-			compatible = "xlnx,audio-formatter-1.0", "xlnx,audio-formatter-1.0";
-			interrupt-names = "irq_mm2s";
-			interrupt-parent = <&intc>;
-			interrupts = <0 30 4>;
-			reg = <0x43c10000 0x10000>;
-			xlnx,include-mm2s = <0x1>;
-			xlnx,include-s2mm = <0x0>;
-			xlnx,max-num-channels-mm2s = <0x2>;
-			xlnx,max-num-channels-s2mm = <0x2>;
-			xlnx,mm2s-addr-width = <0x20>;
-			xlnx,mm2s-async-clock = <0x1>;
-			xlnx,mm2s-dataformat = <0x3>;
-			xlnx,packing-mode-mm2s = <0x0>;
-			xlnx,packing-mode-s2mm = <0x0>;
-			xlnx,s2mm-addr-width = <0x40>;
-			xlnx,s2mm-async-clock = <0x1>;
-			xlnx,s2mm-dataformat = <0x1>;
-			xlnx,tx = <&i2s_transmitter_0>;
-		};
-		axi_rs485_0: axi_rs485@43c90000 {
-			clock-frequency = <50000000>;
-			clocks = <&rs485_clk>;
+		axi_rs485_0: rs485_0 {
+			clock-frequency = <100000000>;
+			clock-names = "s_axi_aclk";
+			clocks = <&clkc 15>;
 			compatible = "ns16550a";
 			device_type = "serial";
-			port-number = <8>;
 			reg-offset = <0x1000>;
 			reg-shift = <2>;
 			interrupt-names = "ip2intc_irpt";
@@ -100,12 +259,12 @@
 			interrupts = <0 54 4>;
 			reg = <0x43c90000 0x10000>;
 		};
-		axi_rs485_1: axi_rs485@43ca0000 {
-			clock-frequency = <50000000>;
-			clocks = <&rs485_clk>;
+		axi_rs485_1: rs485_1 {
+			clock-frequency = <100000000>;
+			clock-names = "s_axi_aclk";
+			clocks = <&clkc 15>;
 			compatible = "ns16550a";
 			device_type = "serial";
-			port-number = <9>;
 			reg-offset = <0x1000>;
 			reg-shift = <2>;
 			interrupt-names = "ip2intc_irpt";
@@ -113,7 +272,35 @@
 			interrupts = <0 55 4>;
 			reg = <0x43ca0000 0x10000>;
 		};
-		axi_uart16550_FeliCa: serial@43c40000 {
+		pwm_backlight: timer@42800000 {
+			clock-frequency = <100000000>;
+			clock-names = "s_axi_aclk";
+			clocks = <&clkc 15>;
+			compatible = "xlnx,axi-timer-2.0";
+			reg = <0x42800000 0x10000>;
+			#pwm-cells = <2>;
+			xlnx,count-width = <0x20>;
+			xlnx,gen0-assert = <0x1>;
+			xlnx,gen1-assert = <0x1>;
+			xlnx,one-timer-only = <0x0>;
+			xlnx,trig0-assert = <0x1>;
+			xlnx,trig1-assert = <0x1>;
+		};
+		pwm_buzz: timer@42810000 {
+			clock-frequency = <100000000>;
+			clock-names = "s_axi_aclk";
+			clocks = <&clkc 15>;
+			compatible = "xlnx,axi-timer-2.0";
+			reg = <0x42810000 0x10000>;
+			#pwm-cells = <2>;
+			xlnx,count-width = <0x20>;
+			xlnx,gen0-assert = <0x1>;
+			xlnx,gen1-assert = <0x1>;
+			xlnx,one-timer-only = <0x0>;
+			xlnx,trig0-assert = <0x1>;
+			xlnx,trig1-assert = <0x1>;
+		};
+		axi_uart16550_FeliCa: uart_FeliCa {
 			clock-frequency = <100000000>;
 			clock-names = "s_axi_aclk";
 			clocks = <&clkc 15>;
@@ -137,7 +324,7 @@
 			xlnx,use-modem-ports = <0x1>;
 			xlnx,use-user-ports = <0x1>;
 		};
-		axi_uart16550_JVM1: serial@43c60000 {
+		axi_uart16550_JVM1: uart_JVM1 {
 			clock-frequency = <100000000>;
 			clock-names = "s_axi_aclk";
 			clocks = <&clkc 15>;
@@ -161,7 +348,7 @@
 			xlnx,use-modem-ports = <0x1>;
 			xlnx,use-user-ports = <0x1>;
 		};
-		axi_uart16550_JVM2: serial@43c70000 {
+		axi_uart16550_JVM2: uart_JVM2 {
 			clock-frequency = <100000000>;
 			clock-names = "s_axi_aclk";
 			clocks = <&clkc 15>;
@@ -185,7 +372,7 @@
 			xlnx,use-modem-ports = <0x1>;
 			xlnx,use-user-ports = <0x1>;
 		};
-		axi_uart16550_MDB: serial@43c80000 {
+		axi_uart16550_MDB: uart_MDB {
 			clock-frequency = <100000000>;
 			clock-names = "s_axi_aclk";
 			clocks = <&clkc 15>;
@@ -209,7 +396,7 @@
 			xlnx,use-modem-ports = <0x1>;
 			xlnx,use-user-ports = <0x1>;
 		};
-		axi_uart16550_MagCard: serial@43c50000 {
+		axi_uart16550_MagCard: uart_MagCard {
 			clock-frequency = <100000000>;
 			clock-names = "s_axi_aclk";
 			clocks = <&clkc 15>;
@@ -233,7 +420,7 @@
 			xlnx,use-modem-ports = <0x1>;
 			xlnx,use-user-ports = <0x1>;
 		};
-		axi_uart16550_UPS: serial@43c30000 {
+		axi_uart16550_UPS: uart_UPS {
 			clock-frequency = <100000000>;
 			clock-names = "s_axi_aclk";
 			clocks = <&clkc 15>;
@@ -257,7 +444,7 @@
 			xlnx,use-modem-ports = <0x1>;
 			xlnx,use-user-ports = <0x1>;
 		};
-		axi_uart16550_printer: serial@43c20000 {
+		axi_uart16550_printer: uart_Printer {
 			clock-frequency = <100000000>;
 			clock-names = "s_axi_aclk";
 			clocks = <&clkc 15>;
@@ -281,10 +468,32 @@
 			xlnx,use-modem-ports = <0x1>;
 			xlnx,use-user-ports = <0x1>;
 		};
+		audio_formatter_0: audio_formatter@43c10000 {
+			clock-names = "s_axi_lite_aclk", "m_axis_mm2s_aclk", "aud_mclk";
+			clocks = <&clkc 15>, <&clkc 15>, <&audio_mclk>;
+			compatible = "xlnx,audio-formatter-1.0", "xlnx,audio-formatter-1.0";
+			interrupt-names = "irq_mm2s";
+			interrupt-parent = <&intc>;
+			interrupts = <0 30 4>;
+			reg = <0x43c10000 0x10000>;
+			xlnx,include-mm2s = <0x1>;
+			xlnx,include-s2mm = <0x0>;
+			xlnx,max-num-channels-mm2s = <0x2>;
+			xlnx,max-num-channels-s2mm = <0x2>;
+			xlnx,mm2s-addr-width = <0x20>;
+			xlnx,mm2s-async-clock = <0x1>;
+			xlnx,mm2s-dataformat = <0x3>;
+			xlnx,packing-mode-mm2s = <0x0>;
+			xlnx,packing-mode-s2mm = <0x0>;
+			xlnx,s2mm-addr-width = <0x40>;
+			xlnx,s2mm-async-clock = <0x1>;
+			xlnx,s2mm-dataformat = <0x1>;
+			xlnx,tx = <&i2s_transmitter_0>;
+		};
 		i2s_transmitter_0: i2s_transmitter@43c00000 {
 			aud_mclk = <18432000>;
 			clock-names = "s_axi_ctrl_aclk", "aud_mclk", "s_axis_aud_aclk";
-			clocks = <&clkc 15>, <&clkc 16>, <&clkc 15>;
+			clocks = <&clkc 15>, <&audio_mclk>, <&clkc 15>;
 			compatible = "xlnx,i2s-transmitter-1.0", "xlnx,i2s-transmitter-1.0";
 			interrupt-names = "irq";
 			interrupt-parent = <&intc>;
@@ -332,12 +541,35 @@
 	ethernet_phy: ethernet-phy@0 {
 		reg = <0>;
 		device_type = "ethernet-phy";
+		interrupt-names = "interrupt";
+		interrupt-parent = <&intc>;
+		interrupts = <0 56 4>;
+		// rxc-skew-psec = <1500>;
+		// txc-skew-psec = <1500>;
 	};
 };
 &gpio0 {
 	emio-gpio-width = <64>;
 	gpio-mask-high = <0x0>;
 	gpio-mask-low = <0x5600>;
+};
+&i2c0 {
+	clock-frequency = <400000>;
+	status = "okay";
+	rtc: mcp7940x@6f {
+		compatible = "microchip,mcp7940x";
+		reg = <0x6f>;
+	};
+	tca6416: gpio@20 {
+		compatible = "ti,tca6416";
+		reg = <0x20>;
+		gpio-controller;
+		#gpio-cells = <2>;
+	};
+};
+&i2c1 {
+	clock-frequency = <400000>;
+	status = "okay";
 };
 &intc {
 	num_cpus = <2>;
@@ -349,6 +581,35 @@
 	spi-rx-bus-width = <4>;
 	spi-tx-bus-width = <4>;
 	status = "okay";
+	xlnx,qspi-mode = <0x1>;
+	xlnx,fb-clk = <0x0>;
+	flash0: flash@0 {
+		compatible = "jedec,spi-nor";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		reg = <0>;
+		spi-max-frequency = <50000000>;
+		partition@0 {
+			/* 5MB for BOOT.BIN (zynq_fsbl.elf, system.bit, u-boot.elf, system.dtb)*/
+			label = "boot";
+			reg = <0x00000000 0x00500000>;
+		};
+		partition@1 {
+			/* 128KB for u-boot environment variable */
+			label = "bootenv";
+			reg = <0x00500000 0x00020000>;
+		};
+		partition@2 {
+			/* 10.5MB for linux kernel */
+			label = "kernel";
+			reg = <0x00520000 0x00a80000>;
+		};
+		partition@3 {
+			/* u-boot boot script */
+			label = "boot_script";
+			reg = <0x00fa0000 0x00000000>;
+		};
+	};
 };
 &sdhci0 {
 	status = "okay";
@@ -356,16 +617,25 @@
 	xlnx,has-power = <0x0>;
 	xlnx,has-wp = <0x0>;
 };
-&uart1 {
+&sdhci1 {
+	status = "okay";
+	xlnx,has-cd = <0x0>;
+	xlnx,has-power = <0x0>;
+	xlnx,has-wp = <0x0>;
+};
+&uart0 {
 	cts-override ;
 	device_type = "serial";
-	port-number = <0>;
+	status = "okay";
+};
+&uart1 {
+	device_type = "serial";
 	status = "okay";
 };
 &usb0 {
 	phy_type = "ulpi";
 	status = "okay";
-	usb-reset = <&gpio0 46 0>;
+	usb-reset = <&gpio0 107 0>;
 	dr_mode = "host";
 	usb-phy = <&usb_phy0>;
 };

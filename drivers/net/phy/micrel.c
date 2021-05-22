@@ -703,6 +703,33 @@ static int ksz9131_of_load_skew_values(struct phy_device *phydev,
 
 	return phy_write_mmd(phydev, 2, reg, newval);
 }
+#define MII_KSZ9131RN_TXDLL_CTRL	0x4d
+#define MII_KSZ9131RN_TXDLL_CTRL_RESET	0x2000
+#define MII_KSZ9131RN_TXDLL_CTRL_BYPASS	0x1000
+static int ksz9131_init_dll(struct phy_device *phydev)
+{
+	u16 reg;
+	
+	reg =  phy_read_mmd(phydev, 2, MII_KSZ9131RN_TXDLL_CTRL) & ~MII_KSZ9131RN_TXDLL_CTRL_BYPASS;
+
+	phy_write_mmd(phydev, 2, MII_KSZ9131RN_TXDLL_CTRL, reg);
+	phy_write_mmd(phydev, 2, MII_KSZ9131RN_TXDLL_CTRL, reg | MII_KSZ9131RN_TXDLL_CTRL_RESET);
+	phy_write_mmd(phydev, 2, MII_KSZ9131RN_TXDLL_CTRL, reg);
+	return 0;
+}
+/* Enable energy-detect power-down mode */
+#define MII_KSZ9131RN_EDPD		0x24
+#define MII_KSZ9131RN_EDPD_ENABLE	1
+static int ksz9131_enable_edpd(struct phy_device *phydev)
+{
+	int reg;
+
+	reg = phy_read_mmd(phydev, 0x1C, MII_KSZ9131RN_EDPD);
+	if (reg < 0)
+		return reg;
+	return phy_write_mmd(phydev, 0x1C, MII_KSZ9131RN_EDPD,
+			     reg | MII_KSZ9131RN_EDPD_ENABLE);
+}
 
 static int ksz9131_config_init(struct phy_device *phydev)
 {
@@ -729,6 +756,8 @@ static int ksz9131_config_init(struct phy_device *phydev)
 
 	if (!of_node)
 		return 0;
+	ksz9131_init_dll(phydev);
+	ksz9131_enable_edpd(phydev);
 
 	ret = ksz9131_of_load_skew_values(phydev, of_node,
 					  MII_KSZ9031RN_CLK_PAD_SKEW, 5,
@@ -754,7 +783,7 @@ static int ksz9131_config_init(struct phy_device *phydev)
 	if (ret < 0)
 		return ret;
 
-	return 0;
+	return genphy_restart_aneg(phydev);
 }
 
 #define KSZ8873MLL_GLOBAL_CONTROL_4	0x06

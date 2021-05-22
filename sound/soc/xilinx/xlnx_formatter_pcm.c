@@ -372,7 +372,7 @@ static int xlnx_formatter_pcm_open(struct snd_pcm_substream *substream)
 
 	stream_data->xfer_mode = (val & data_xfer_mode) >> data_xfer_shift;
 	stream_data->ch_limit = (val & ch_count_mask) >> ch_count_shift;
-	dev_info(component->dev,
+	dev_dbg(component->dev,
 		 "stream %d : format = %d mode = %d ch_limit = %d\n",
 		 substream->stream, stream_data->interleaved,
 		 stream_data->xfer_mode, stream_data->ch_limit);

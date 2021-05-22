@@ -383,10 +383,10 @@ static int xilinxfb_assign(struct platform_device *pdev,
 	}
 
 	/* Put a banner in the log (for DEBUG) */
-	dev_dbg(dev, "regs: phys=%pa, virt=%p\n", &drvdata->regs_phys, drvdata->regs);
+	dev_info(dev, "regs: phys=%pa, virt=%p\n", &drvdata->regs_phys, drvdata->regs);
 
 	/* Put a banner in the log (for DEBUG) */
-	dev_dbg(dev, "fb: phys=%llx, virt=%p, size=%x\n",
+	dev_info(dev, "fb: phys=%llx, virt=%p, size=%x\n",
 		(unsigned long long)drvdata->fb_phys, drvdata->fb_virt, fbsize);
 
 	return 0;	/* success */

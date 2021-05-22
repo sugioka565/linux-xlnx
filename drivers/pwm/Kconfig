@@ -553,4 +553,13 @@ config PWM_ZX
 	  To compile this driver as a module, choose M here: the module
 	  will be called pwm-zx.
 
+config PWM_XILINX
+	tristate "Xilinx Timer based PWM support"
+	depends on (XILINX_VIRTEX || MICROBLAZE || ARCH_ZYNQ || ARCH_ZYNQMP)
+	help
+	  Generic PWM framework driver for Xilinx FPGAs.
+
+	  To compile this driver as a module, choose M here: the module
+	  will be called pwm-xilinx.
+
 endif

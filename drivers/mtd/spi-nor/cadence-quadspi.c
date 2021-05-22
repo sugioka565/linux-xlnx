@@ -1562,8 +1562,11 @@ static int cqspi_setdlldelay(struct spi_nor *nor)
 	u8 dummy_flag = 0;
 	u8 count;
 	u8 opcode = CQSPI_READ_ID;
+	u64 temp;
 
-	max_tap = ((TERA_MACRO / cqspi->master_ref_clk_hz) / 160);
+	temp = TERA_MACRO;
+	do_div(temp, cqspi->master_ref_clk_hz * 160);
+	max_tap = temp;
 	if (cqspi->dll_mode == CQSPI_DLL_MODE_MASTER) {
 		/* Drive DLL reset bit to low */
 		writel(0, cqspi->iobase + CQSPI_REG_PHY_CONFIG);
