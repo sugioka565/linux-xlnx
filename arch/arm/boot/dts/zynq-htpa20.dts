@@ -114,6 +114,7 @@
 	};
 	gpio-keys {
 		compatible = "gpio-keys";
+		status = "disabled";
 		din0 {
 			label = "din0";
 			gpios = <&gpio0 62 GPIO_ACTIVE_HIGH>;
