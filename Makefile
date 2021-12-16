@@ -1814,10 +1814,9 @@ quiet_cmd_rmfiles = $(if $(wildcard $(rm-files)),CLEAN   $(wildcard $(rm-files))
 # Run depmod only if we have System.map and depmod is executable
 quiet_cmd_depmod = DEPMOD  $(KERNELRELEASE)
     cmd_depmod = \
-	if [ -r System.map -a -x $(DEPMOD) ]; then                          \
-		$(DEPMOD) -ae -F System.map                                     \
-		$(if $(strip $(INSTALL_MOD_PATH)), -b $(INSTALL_MOD_PATH) )     \
-		$(KERNELRELEASE);                                               \
+	if [ -r System.map -a -x $(DEPMOD) ]; then                 \
+		$(DEPMOD) -ae -F System.map -b $(INSTALL_MOD_PATH) \
+		$(KERNELRELEASE);                                  \
 	fi
 
 # read saved command lines for existing targets
