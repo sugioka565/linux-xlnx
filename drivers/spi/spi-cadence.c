@@ -124,6 +124,9 @@ struct cdns_spi {
 	int rx_bytes;
 	u8 dev_busy;
 	u32 is_decoded_cs;
+	u32 delay_btwn;
+	u32 delay_after;
+	u32 delay_init;
 };
 
 /* Macros for the SPI controller read/write */
@@ -151,6 +154,7 @@ static inline void cdns_spi_write(struct cdns_spi *xspi, u32 offset, u32 val)
 static void cdns_spi_init_hw(struct cdns_spi *xspi)
 {
 	u32 ctrl_reg = CDNS_SPI_CR_DEFAULT;
+	u32 delay_reg = 0;
 
 	if (xspi->is_decoded_cs)
 		ctrl_reg |= CDNS_SPI_CR_PERI_SEL;
@@ -165,6 +169,9 @@ static void cdns_spi_init_hw(struct cdns_spi *xspi)
 	cdns_spi_write(xspi, CDNS_SPI_ISR, CDNS_SPI_IXR_ALL);
 	cdns_spi_write(xspi, CDNS_SPI_CR, ctrl_reg);
 	cdns_spi_write(xspi, CDNS_SPI_ER, CDNS_SPI_ER_ENABLE);
+
+	delay_reg = (((u32)xspi->delay_btwn & 0xff) << 16) | (((u32)xspi->delay_after & 0xff) << 8) | ((u32)xspi->delay_init & 0xff);
+	cdns_spi_write(xspi, CDNS_SPI_DR, delay_reg);
 }
 
 /**
@@ -483,6 +490,7 @@ static int cdns_spi_probe(struct platform_device *pdev)
 	struct spi_master *master;
 	struct cdns_spi *xspi;
 	u32 num_cs;
+    u32 spi_mode;
 
 	master = spi_alloc_master(&pdev->dev, sizeof(*xspi));
 	if (!master)
@@ -540,6 +548,15 @@ static int cdns_spi_probe(struct platform_device *pdev)
 				   &xspi->is_decoded_cs);
 	if (ret < 0)
 		xspi->is_decoded_cs = 0;
+	ret = of_property_read_u32(pdev->dev.of_node, "xlnx,delay-btwn", &xspi->delay_btwn);
+	if (ret < 0)
+		xspi->delay_btwn = 0;
+	ret = of_property_read_u32(pdev->dev.of_node, "xlnx,delay-after", &xspi->delay_after);
+	if (ret < 0)
+		xspi->delay_after = 0;
+	ret = of_property_read_u32(pdev->dev.of_node, "xlnx,delay-init", &xspi->delay_init);
+	if (ret < 0)
+		xspi->delay_init = 0;
 
 	/* SPI controller initializations */
 	cdns_spi_init_hw(xspi);
@@ -565,7 +582,11 @@ static int cdns_spi_probe(struct platform_device *pdev)
 	master->unprepare_transfer_hardware = cdns_unprepare_transfer_hardware;
 	master->set_cs = cdns_spi_chipselect;
 	master->auto_runtime_pm = true;
-	master->mode_bits = SPI_CPOL | SPI_CPHA | SPI_CS_HIGH;
+
+	ret = of_property_read_u32(pdev->dev.of_node, "spi-mode", &spi_mode);
+	if (ret < 0)
+		spi_mode = SPI_CPOL | SPI_CPHA | SPI_CS_HIGH;
+	master->mode_bits = spi_mode;
 
 	xspi->clk_rate = clk_get_rate(xspi->ref_clk);
 	/* Set to default valid value */

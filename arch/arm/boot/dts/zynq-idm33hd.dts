@@ -1,50 +1,168 @@
 // SPDX-License-Identifier: GPL-2.0+
 /dts-v1/;
 #include "zynq-7000.dtsi"
+#include <dt-bindings/gpio/gpio.h>
 
 / {
-	model = "Sugioka System IDM33HD board";
-	compatible = "xlnx,zynq-7000";
+    model = "Sugioka System IDM33HD board";
+    compatible = "xlnx,zynq-7000";
 
-	aliases {
-		ethernet0 = &gem0;
-		serial0 = &uart0;
-	};
+    aliases {
+        ethernet0 = &gem0;
+        serial0 = &uart0;
+        qspi = &qspi;
+        spi0 = &spi0;
+        mmc0 = &sdhci0;
+        mmc1 = &sdhci1;
+    };
+    cpus {
+        cpu@0 {
+            operating-points = <666666 1000000 333333 1000000>;
+        };
+    };
 
-	memory@0 {
-		device_type = "memory";
-		reg = <0x0 0x40000000>;
-	};
+    memory@0 {
+        device_type = "memory";
+        reg = <0x0 0x10000000>;
+    };
 
-	chosen {
-		bootargs = "";
-		stdout-path = "serial0:115200n8";
-	};
+    reserved-memory {
+        #address-cells = <1>;
+        #size-cells = <1>;
+        ranges;
+        display_reserved: framebuffer@0f800000 {
+            no-map;
+            reg = <0x0f800000 0x00800000>;
+        };
+    };
+    chosen {
+        bootargs = "earlycon";
+        stdout-path = "serial0:115200n8";
+    };
+    amba_pl: amba_pl {
+        #address-cells = <1>;
+        #size-cells = <1>;
+        compatible = "simple-bus";
+        ranges ;
+        misc_clk_0: misc_clk_0 {
+            #clock-cells = <0>;
+            clock-frequency = <148500000>;
+            compatible = "fixed-clock";
+        };
+        framebuffer_0: framebuffer@0f800000 {
+            compatible = "simple-framebuffer";
+            reg = <0x0f800000 (1920 * 1080 * 4)>;
+            width = <1920>;
+            height = <1080>;
+            stride = <(1920 * 4)>;
+            format = "a8r8g8b8";
+            clocks = <&misc_clk_0>;
+        };
+    };
 };
 
 &clkc {
-	ps-clk-frequency = <33333333>;
+    fclk-enable = <0x3>;
+    ps-clk-frequency = <33333333>;
 };
 
 &gem0 {
-	status = "okay";
-	phy-mode = "rgmii-id";
-	phy-handle = <&ethernet_phy>;
+    status = "okay";
+    phy-mode = "gmii";
+    phy-handle = <&ethernet_phy>;
+    xlnx,ptp-enet-clock = <0x69f6bcb>;
 
-	ethernet_phy: ethernet-phy@0 {
-		reg = <0>;
-		device_type = "ethernet-phy";
-	};
+    ethernet_phy: ethernet-phy@0 {
+        reg = <0>;
+        device_type = "ethernet-phy";
+        max-speed = <100>;
+        reset-gpios = <&gpio0 14 GPIO_ACTIVE_LOW>;
+        reset-assert-us = <100>;
+        reset-deassert-us = <100>;
+    };
+};
+
+&gpio0 {
+    emio-gpio-width = <64>;
+    gpio-mask-high = <0x0>;
+    gpio-mask-low = <0x5600>;
+    emmc_reset_b {
+        gpio-hog;
+        gpios = <15 GPIO_ACTIVE_LOW>;
+        output-low;
+        line-name = "emmc-reset-b";
+    };
+};
+&intc {
+    num_cpus = <2>;
+    num_interrupts = <96>;
+};
+&qspi {
+    status = "okay";
+    is-dual = <0>;
+    num-cs = <1>;
+    flash0: flash@0 {
+        compatible = "spansion,s25fl128s", "winbond,w25q128", "jedec,spi-nor";
+        reg = <0x0>;
+        spi-tx-bus-width = <4>;
+        spi-rx-bus-width = <4>;
+        spi-max-frequency = <50000000>;
+        #address-cells = <1>;
+        #size-cells = <1>;
+        partition@0 {
+            label = "boot";
+            reg = <0x00000000 0x00500000>;
+        };
+        partition@1 {
+            label = "bootenv";
+            reg = <0x00500000 0x00020000>;
+        };
+        partition@2 {
+            label = "kernel";
+            reg = <0x00520000 0x00a80000>;
+        };
+        partition@3 {
+            label = "spare";
+            reg = <0x00fa0000 0x00000000>;
+        };
+    };
 };
 
 &sdhci0 {
-	status = "okay";
+    u-boot,dm-pre-reloc;
+    status = "okay";
+    xlnx,has-cd = <0x1>;
+    xlnx,has-power = <0x0>;
+    xlnx,has-wp = <0x0>;
 };
 
 &sdhci1 {
-	status = "okay";
+    u-boot,dm-pre-reloc;
+    status = "okay";
+    xlnx,has-cd = <0x0>;
+    xlnx,has-power = <0x0>;
+    xlnx,has-wp = <0x0>;
 };
-
+&spi0 {
+    is-decoded-cs = <0>;
+    num-cs = <3>;
+    spi-mode = <3>;
+    xlnx,delay-btwn = <120>; // spi clock = 120MHz, Delay in SPI clock cycles between one chip select being de-activated and the activation of another = 1usec
+    xlnx,delay-after = <240>; // Delay in SPI clock cycles between last bit of current word to 1st bit of next word delay = 2usec
+    xlnx,delay-init = <60>; // cs active to 1st clock delay 500nsec
+    status = "okay";
+    #address-cells = <1>;
+    #size-cells = <0>;
+    spidev0: spidev@0 {
+        compatible = "dh2228fv";
+        spi-max-frequency = <10000000>;
+        reg = <0>;
+    };
+};
 &uart0 {
-	status = "okay";
+    u-boot,dm-pre-reloc;
+    cts-override ;
+    device_type = "serial";
+    port-number = <0>;
+    status = "okay";
 };

@@ -437,8 +437,11 @@ static int simplefb_probe(struct platform_device *pdev)
 	}
 
 	info = framebuffer_alloc(sizeof(struct simplefb_par), &pdev->dev);
-	if (!info)
+	if (!info) {
+        ret = -ENOMEM;
+		dev_err(&pdev->dev, "Unable allocate framebuffer for simplefb: %d\n", ret);
 		return -ENOMEM;
+    }
 	platform_set_drvdata(pdev, info);
 
 	par = info->par;
@@ -462,6 +465,7 @@ static int simplefb_probe(struct platform_device *pdev)
 	info->apertures = alloc_apertures(1);
 	if (!info->apertures) {
 		ret = -ENOMEM;
+		dev_err(&pdev->dev, "Unable allocate apertures for simplefb: %d\n", ret);
 		goto error_fb_release;
 	}
 	info->apertures->ranges[0].base = info->fix.smem_start;
@@ -473,17 +477,22 @@ static int simplefb_probe(struct platform_device *pdev)
 				       info->fix.smem_len);
 	if (!info->screen_base) {
 		ret = -ENOMEM;
+		dev_err(&pdev->dev, "Unable ioremap screen for simplefb: %d start=%lx length=%x\n", ret, info->fix.smem_start, info->fix.smem_len);
 		goto error_fb_release;
 	}
 	info->pseudo_palette = par->palette;
 
 	ret = simplefb_clocks_get(par, pdev);
-	if (ret < 0)
+	if (ret < 0) {
+		dev_err(&pdev->dev, "Unable get clocks for simplefb: %d\n", ret);
 		goto error_unmap;
+    }
 
 	ret = simplefb_regulators_get(par, pdev);
-	if (ret < 0)
+	if (ret < 0) {
+		dev_err(&pdev->dev, "Unable get regulator for simplefb: %d\n", ret);
 		goto error_clocks;
+    }
 
 	simplefb_clocks_enable(par, pdev);
 	simplefb_regulators_enable(par, pdev);
