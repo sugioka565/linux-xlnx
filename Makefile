@@ -10,6 +10,9 @@ NAME = Curry Ramen
 # More info can be located in ./README
 # Comments in this file are targeted only to the developer, do not
 # expect to learn how to build the kernel reading this file.
+ARCH := arm64
+CROSS_COMPILE = aarch64-linux-gnu-
+export INSTALL_MOD_PATH ?= $(shell pwd)/../rootfs
 
 $(if $(filter __%, $(MAKECMDGOALS)), \
 	$(error targets prefixed with '__' are only for internal use))

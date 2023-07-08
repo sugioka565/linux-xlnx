@@ -1,0 +1,715 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * dts file for KV260 revA Carrier Card
+ *
+ * (C) Copyright 2020 - 2021, Xilinx, Inc.
+ *
+ * Michal Simek <michal.simek@xilinx.com>
+ */
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/net/ti-dp83867.h>
+#include <dt-bindings/phy/phy.h>
+#include <dt-bindings/pinctrl/pinctrl-zynqmp.h>
+#include <dt-bindings/media/xilinx-vip.h>
+#include <dt-bindings/clock/xlnx-zynqmp-clk.h>
+
+/dts-v1/;
+/plugin/;
+
+&{/} {
+	compatible = "xlnx,zynqmp";
+	model = "VM-410HD revA";
+	#address-cells = <2>;
+	#size-cells = <2>;
+};
+
+&gpio {
+	emio-gpio-width = <32>;
+	gpio-mask-high = <0x0>;
+	gpio-mask-low = <0x5600>;
+	status = "okay";
+};
+
+&gpu {
+	status = "okay";
+	xlnx,tz-nonsecure = <0x1>;
+};
+
+&spi1 { /* MIO6, 9-11 */
+    status = "disabled";
+};
+
+&i2c1 { /* I2C_SCK C23/C24 - MIO from SOM */
+	#address-cells = <1>;
+	#size-cells = <0>;
+	pinctrl-names = "default", "gpio";
+	pinctrl-0 = <&pinctrl_i2c1_default>;
+	pinctrl-1 = <&pinctrl_i2c1_gpio>;
+	scl-gpios = <&gpio 24 GPIO_ACTIVE_HIGH>;
+	sda-gpios = <&gpio 25 GPIO_ACTIVE_HIGH>;
+
+	/* u43 - 0x2d - USB hub */
+	/* u27 - 0xe0 - STDP4320 DP/HDMI splitter */
+};
+
+&amba {
+	clk_27: clk_27 {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <27000000>;
+	};
+
+	clk_26: clk_26 {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <26000000>;
+	};
+};
+
+/* DP/USB 3.0 */
+&psgtr {
+	status = "okay";
+	/* pcie, usb3, sata */
+	clocks = <&clk_27>, <&clk_26>;
+	clock-names = "ref1", "ref2";
+};
+
+&zynqmp_dpsub {
+	status = "okay";
+	phy-names = "dp-phy0", "dp-phy1";
+	phys = <&psgtr 1 PHY_TYPE_DP 0 1>, <&psgtr 0 PHY_TYPE_DP 1 1>;
+        clocks = <&dp_aclk>, <&zynqmp_clk DP_AUDIO_REF>, <&zynqmp_clk DP_VIDEO_REF>; //, <&video_clk_wiz>;
+        clock-names = "dp_apb_clk", "dp_aud_clk", "dp_vtc_pixel_clk_in"; //, "dp_live_video_in_clk";
+	assigned-clock-rates = <27000000>, <25000000>, <300000000>; //, <262750170>;
+};
+
+&zynqmp_dpdma {
+	status = "okay";
+	assigned-clock-rates = <600000000>;
+};
+
+&usb0 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_usb0_default>;
+	phy-names = "usb3-phy";
+	phys = <&psgtr 2 PHY_TYPE_USB3 0 2>;
+	assigned-clock-rates = <250000000>, <20000000>;
+
+	usb5744: usb-hub { /* u43 */
+		status = "okay";
+		compatible = "microchip,usb5744";
+		i2c-bus = <&i2c1>;
+		reset-gpios = <&gpio 44 GPIO_ACTIVE_LOW>;
+	};
+};
+
+&dwc3_0 {
+	status = "okay";
+	dr_mode = "host";
+	snps,usb3_lpm_capable;
+	maximum-speed = "super-speed";
+};
+
+&sdhci0 {
+	assigned-clock-rates = <187499999>;
+};
+
+&sdhci1 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_sdhci1_default>;
+	disable-wp;
+	xlnx,mio-bank = <1>;
+	clk-phase-sd-hs = <126>, <60>;
+	clk-phase-uhs-sdr25 = <120>, <60>;
+	clk-phase-uhs-ddr50 = <126>, <48>;
+	assigned-clock-rates = <187499999>;
+	bus-width = <8>;
+};
+
+&gem3 { /* required by spec */
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_gem3_default>;
+	phy-handle = <&phy0>;
+	phy-mode = "rgmii-id";
+
+	mdio: mdio {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		phy0: ethernet-phy@1 {
+			#phy-cells = <1>;
+			reg = <0>;
+		};
+	};
+};
+
+&pinctrl0 { /* required by spec */
+	status = "okay";
+
+	pinctrl_uart1_default: uart1-default {
+		conf {
+			groups = "uart1_9_grp";
+			slew-rate = <SLEW_RATE_SLOW>;
+			power-source = <IO_STANDARD_LVCMOS18>;
+			drive-strength = <12>;
+		};
+
+		conf-rx {
+			pins = "MIO37";
+			bias-high-impedance;
+		};
+
+		conf-tx {
+			pins = "MIO36";
+			bias-disable;
+		};
+
+		mux {
+			groups = "uart1_9_grp";
+			function = "uart1";
+		};
+	};
+
+	pinctrl_i2c1_default: i2c1-default {
+		conf {
+			groups = "i2c1_6_grp";
+			bias-pull-up;
+			slew-rate = <SLEW_RATE_SLOW>;
+			power-source = <IO_STANDARD_LVCMOS18>;
+		};
+
+		mux {
+			groups = "i2c1_6_grp";
+			function = "i2c1";
+		};
+	};
+
+	pinctrl_i2c1_gpio: i2c1-gpio {
+		conf {
+			groups = "gpio0_24_grp", "gpio0_25_grp";
+			slew-rate = <SLEW_RATE_SLOW>;
+			power-source = <IO_STANDARD_LVCMOS18>;
+		};
+
+		mux {
+			groups = "gpio0_24_grp", "gpio0_25_grp";
+			function = "gpio0";
+		};
+	};
+
+	pinctrl_gem3_default: gem3-default {
+		conf {
+			groups = "ethernet3_0_grp";
+			slew-rate = <SLEW_RATE_FAST>;
+			drive-strength = <12>;
+			power-source = <IO_STANDARD_LVCMOS18>;
+		};
+
+		conf-rx {
+			pins = "MIO70", "MIO72", "MIO74";
+			bias-high-impedance;
+			low-power-disable;
+		};
+
+		conf-bootstrap {
+			pins = "MIO71", "MIO73", "MIO75";
+			bias-disable;
+			low-power-disable;
+		};
+
+		conf-tx {
+			pins = "MIO64", "MIO65", "MIO66",
+				"MIO67", "MIO68", "MIO69";
+			bias-disable;
+			low-power-enable;
+		};
+
+		conf-mdio {
+			groups = "mdio3_0_grp";
+			slew-rate = <SLEW_RATE_SLOW>;
+			power-source = <IO_STANDARD_LVCMOS18>;
+			bias-disable;
+		};
+
+		mux-mdio {
+			function = "mdio3";
+			groups = "mdio3_0_grp";
+		};
+
+		mux {
+			function = "ethernet3";
+			groups = "ethernet3_0_grp";
+		};
+	};
+
+	pinctrl_usb0_default: usb0-default {
+		conf {
+			groups = "usb0_0_grp";
+			power-source = <IO_STANDARD_LVCMOS18>;
+		};
+
+		conf-rx {
+			pins = "MIO52", "MIO53", "MIO55";
+			bias-high-impedance;
+			drive-strength = <12>;
+			slew-rate = <SLEW_RATE_FAST>;
+		};
+
+		conf-tx {
+			pins = "MIO54", "MIO56", "MIO57", "MIO58", "MIO59",
+			"MIO60", "MIO61", "MIO62", "MIO63";
+			bias-disable;
+			drive-strength = <4>;
+			slew-rate = <SLEW_RATE_SLOW>;
+		};
+
+		mux {
+			groups = "usb0_0_grp";
+			function = "usb0";
+		};
+	};
+
+	pinctrl_sdhci1_default: sdhci1-default {
+		conf {
+			groups = "sdio1_0_grp";
+			slew-rate = <SLEW_RATE_SLOW>;
+			power-source = <IO_STANDARD_LVCMOS18>;
+			bias-disable;
+		};
+
+		conf-cd {
+			groups = "sdio1_cd_0_grp";
+			bias-high-impedance;
+			bias-pull-up;
+			slew-rate = <SLEW_RATE_SLOW>;
+			power-source = <IO_STANDARD_LVCMOS18>;
+		};
+
+		mux-cd {
+			groups = "sdio1_cd_0_grp";
+			function = "sdio1_cd";
+		};
+
+		mux {
+			groups = "sdio1_0_grp";
+			function = "sdio1";
+		};
+	};
+};
+
+&uart1 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart1_default>;
+};
+
+&amba {
+	#address-cells = <2>;
+	#size-cells = <2>;
+	afi0: afi0 {
+		compatible = "xlnx,afi-fpga";
+		config-afi = < 0 0>, <1 0>, <2 0>, <3 0>, <4 0>, <5 0>, <6 0>, <7 0>, <8 0>, <9 0>, <10 2>, <11 2>, <12 0>, <13 0>, <14 0x200>, <15 0x000>;
+	};
+	clocking0: clocking0 {
+		#clock-cells = <0>;
+		assigned-clock-rates = <99999001>;
+		assigned-clocks = <&zynqmp_clk 71>;
+		clock-output-names = "fabric_clk";
+		clocks = <&zynqmp_clk 71>;
+		compatible = "xlnx,fclk";
+	};
+	sdirxss_v_frmbuf_wr_0: v_frmbuf_wr@80000000 {
+		#dma-cells = <1>;
+		clock-names = "ap_clk";
+		clocks = <&misc_clk_0>;
+		compatible = "xlnx,v-frmbuf-wr-2.4", "xlnx,axi-frmbuf-wr-v2.2";
+		interrupt-names = "interrupt";
+		interrupt-parent = <&gic>;
+		interrupts = <0 90 4>;
+		reg = <0x0 0x80000000 0x0 0x10000>;
+		reset-gpios = <&gpio 106 1>;
+		xlnx,dma-addr-width = <64>;
+		xlnx,dma-align = <16>;
+		xlnx,max-height = <2160>;
+		xlnx,max-width = <3840>;
+		xlnx,pixels-per-clock = <2>;
+		xlnx,s-axi-ctrl-addr-width = <0x7>;
+		xlnx,s-axi-ctrl-data-width = <0x20>;
+		xlnx,vid-formats = "rgb888", "bgr888", "xbgr8888", "xrgb8888", "xbgr2101010", "uyvy", "vuy888", "xvuy8888", "yuvx2101010", "yuyv", "xv20";
+		xlnx,video-width = <10>;
+	};
+	misc_clk_0: misc_clk_0 {
+		#clock-cells = <0>;
+		clock-frequency = <224997750>;
+		compatible = "fixed-clock";
+	};
+	sdirxss_v_smpte_uhdsdi_rx_ss_0: v_smpte_uhdsdi_rx_ss@80040000 {
+		clock-names = "sdi_rx_clk", "video_out_clk", "s_axi_aclk";
+		clocks = <&misc_clk_1>, <&misc_clk_0>, <&misc_clk_2>;
+		compatible = "xlnx,v-smpte-uhdsdi-rx-ss-2.0", "xlnx,v-smpte-uhdsdi-rx-ss";
+		interrupt-names = "sdi_rx_irq";
+		interrupt-parent = <&gic>;
+		interrupts = <0 92 4>;
+		reg = <0x0 0x80040000 0x0 0x10000>;
+		xlnx,bpp = <0xa>;
+		xlnx,exdes-board = "ZCU106";
+		xlnx,exdes-config = "RX_Only";
+		xlnx,exdesboard-version = <0x2>;
+		xlnx,include-adv-features = "false";
+		xlnx,include-axilite = "true";
+		xlnx,include-edh = "true";
+		xlnx,include-hdr10-extract = "false";
+		xlnx,include-hfr = "false";
+		xlnx,include-ycbcr-444 = "false";
+		xlnx,line-rate = "3G_SDI";
+		xlnx,pixels-per-clock = <0x2>;
+		xlnx,video-intf = "AXI4_Stream";
+		sdirx_portssdirxss_v_smpte_uhdsdi_rx_ss_0: ports {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			sdirx_portsdirxss_v_smpte_uhdsdi_rx_ss_0: port@0 {
+				/* Fill the fields xlnx,video-format and xlnx,video-width based on user requirement */
+				reg = <0>;
+				xlnx,video-format = <0>;
+				xlnx,video-width = <10>;
+				sdirx_outsdirxss_v_smpte_uhdsdi_rx_ss_0: endpoint {
+					remote-endpoint = <&sdirxss_v_frmbuf_wr_0sdirxss_v_smpte_uhdsdi_rx_ss_0>;
+				};
+			};
+		};
+	};
+	misc_clk_1: misc_clk_1 {
+		#clock-cells = <0>;
+		clock-frequency = <297000000>;
+		compatible = "fixed-clock";
+	};
+	misc_clk_2: misc_clk_2 {
+		#clock-cells = <0>;
+		clock-frequency = <99999000>;
+		compatible = "fixed-clock";
+	};
+	sditxss_v_frmbuf_rd_0: v_frmbuf_rd@80010000 {
+		#dma-cells = <1>;
+		clock-names = "ap_clk";
+		clocks = <&misc_clk_0>;
+		compatible = "xlnx,v-frmbuf-rd-2.4", "xlnx,axi-frmbuf-rd-v2.2";
+		reg = <0x0 0x80010000 0x0 0x10000>;
+		reset-gpios = <&gpio 105 1>;
+		xlnx,dma-addr-width = <64>;
+		xlnx,dma-align = <16>;
+		xlnx,max-height = <2160>;
+		xlnx,max-width = <3840>;
+		xlnx,pixels-per-clock = <2>;
+		xlnx,s-axi-ctrl-addr-width = <0x7>;
+		xlnx,s-axi-ctrl-data-width = <0x20>;
+		xlnx,vid-formats = "rgb888", "xbgr8888", "xrgb8888", "bgr888", "xbgr2101010", "uyvy", "vuy888", "xvuy8888", "yuvx2101010", "yuyv", "nv12", "nv16", "xv20", "xv15", "y_u_v8";
+		xlnx,video-width = <10>;
+	};
+	sditxss_v_smpte_uhdsdi_tx_ss_0: v_smpte_uhdsdi_tx_ss@80020000 {
+		clock-names = "sdi_tx_clk", "video_in_clk", "s_axi_aclk";
+		clocks = <&misc_clk_1>, <&misc_clk_0>, <&misc_clk_2>;
+		compatible = "xlnx,v-smpte-uhdsdi-tx-ss-2.0", "xlnx,sdi-tx";
+		interrupt-names = "vtc_irq", "sdi_tx_irq";
+		interrupt-parent = <&gic>;
+		interrupts = <0 93 4 0 91 4>;
+		reg = <0x0 0x80020000 0x0 0x20000>;
+		xlnx,bpp = <0xa>;
+		xlnx,exdes-board = "ZCU106";
+		xlnx,exdes-config = "Pass-through_with_Picxo";
+		xlnx,include-adv-features = "false";
+		xlnx,include-axilite = "true";
+		xlnx,include-edh = "true";
+		xlnx,include-hdr10-embedd = "false";
+		xlnx,include-hfr = <0x0>;
+		xlnx,include-ycbcr-444 = <0x0>;
+		xlnx,is-versal = "false";
+		xlnx,line-rate = "3G_SDI";
+		xlnx,pixels-per-clock = <0x2>;
+		xlnx,tx-insert-c-str-st352 = "false";
+		xlnx,video-intf = "AXI4_Stream";
+		sditx_portssditxss_v_smpte_uhdsdi_tx_ss_0: ports {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			encoder_sdi_portsditxss_v_smpte_uhdsdi_tx_ss_0: port@0 {
+				reg = <0>;
+				encodersditxss_v_smpte_uhdsdi_tx_ss_0: endpoint {
+					remote-endpoint = <&sditxss_v_frmbuf_rd_0sditxss_v_smpte_uhdsdi_tx_ss_0>;
+				};
+			};
+		};
+	};
+	vcu_0: vcu@80100000 {
+		#address-cells = <2>;
+		#clock-cells = <1>;
+		#size-cells = <2>;
+		clock-names = "pll_ref", "aclk", "vcu_core_enc", "vcu_mcu_enc", "vcu_core_dec", "vcu_mcu_dec";
+		clocks = <&misc_clk_3>, <&misc_clk_2>, <&vcu_0 0>, <&vcu_0 1>, <&vcu_0 2>, <&vcu_0 3>;
+		compatible = "xlnx,vcu-1.2", "xlnx,vcu";
+		interrupt-names = "vcu_host_interrupt";
+		interrupt-parent = <&gic>;
+		interrupts = <0 89 4>;
+		ranges ;
+		reg = <0x0 0x80140000 0x0 0x1000>, <0x0 0x80141000 0x0 0x1000>;
+		reg-names = "vcu_slcr", "logicore";
+		reset-gpios = <&gpio 108 0>;
+		encoder: al5e@80100000 {
+			compatible = "al,al5e-1.2", "al,al5e";
+			interrupt-parent = <&gic>;
+			interrupts = <0 89 4>;
+			reg = <0x0 0x80100000 0x0 0x10000>;
+		};
+		decoder: al5d@80120000 {
+			compatible = "al,al5d-1.2", "al,al5d";
+			interrupt-parent = <&gic>;
+			interrupts = <0 89 4>;
+			reg = <0x0 0x80120000 0x0 0x10000>;
+		};
+	};
+	misc_clk_3: misc_clk_3 {
+		#clock-cells = <0>;
+		clock-frequency = <49999500>;
+		compatible = "fixed-clock";
+	};
+	vcap_sdirxsdirxss_v_smpte_uhdsdi_rx_ss_0 {
+		compatible = "xlnx,video";
+		dma-names = "port0";
+		dmas = <&sdirxss_v_frmbuf_wr_0 0>;
+		vcap_portssdirxss_v_smpte_uhdsdi_rx_ss_0: ports {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			vcap_portsdirxss_v_smpte_uhdsdi_rx_ss_0: port@0 {
+				direction = "input";
+				reg = <0>;
+				sdirxss_v_frmbuf_wr_0sdirxss_v_smpte_uhdsdi_rx_ss_0: endpoint {
+					remote-endpoint = <&sdirx_outsdirxss_v_smpte_uhdsdi_rx_ss_0>;
+				};
+			};
+		};
+	};
+	v_pl_dispsditxss_v_smpte_uhdsdi_tx_ss_0: drm-pl-disp-drvsditxss_v_smpte_uhdsdi_tx_ss_0 {
+		/* Fill the field xlnx,vformat based on user requirement */
+		compatible = "xlnx,pl-disp";
+		dma-names = "dma0";
+		dmas = <&sditxss_v_frmbuf_rd_0 0>;
+		xlnx,vformat = "YUYV";
+		pl_display_portsditxss_v_smpte_uhdsdi_tx_ss_0: port@0 {
+			reg = <0>;
+			sditxss_v_frmbuf_rd_0sditxss_v_smpte_uhdsdi_tx_ss_0: endpoint {
+				remote-endpoint = <&encodersditxss_v_smpte_uhdsdi_tx_ss_0>;
+			};
+		};
+	};
+};
+
+// &amba {
+// 	#address-cells = <2>;
+// 	#size-cells = <2>;
+// 	afi0: afi0 {
+// 		compatible = "xlnx,afi-fpga";
+// 		config-afi = < 0 0>, <1 0>, <2 0>, <3 0>, <4 0>, <5 0>, <6 0>, <7 0>, <8 0>, <9 0>, <10 0>, <11 0>, <12 0>, <13 0>, <14 0x200>, <15 0x000>;
+// 	};
+// 	clocking0: clocking0 {
+// 		#clock-cells = <0>;
+// 		assigned-clock-rates = <99999001>;
+// 		assigned-clocks = <&zynqmp_clk 71>;
+// 		clock-output-names = "fabric_clk";
+// 		clocks = <&zynqmp_clk 71>;
+// 		compatible = "xlnx,fclk";
+// 	};
+// 	sdi_rx_v_frmbuf_wr_0: v_frmbuf_wr@a0040000 {
+// 		#dma-cells = <1>;
+// 		clock-names = "ap_clk";
+// 		clocks = <&misc_clk_0>;
+// 		compatible = "xlnx,v-frmbuf-wr-2.4", "xlnx,axi-frmbuf-wr-v2.2";
+// 		interrupt-names = "interrupt";
+// 		interrupt-parent = <&gic>;
+// 		interrupts = <0 94 4>;
+// 		reg = <0x0 0xa0040000 0x0 0x10000>;
+// 		reset-gpios = <&gpio 104 1>;
+// 		xlnx,dma-addr-width = <32>;
+// 		xlnx,dma-align = <16>;
+// 		xlnx,max-height = <2160>;
+// 		xlnx,max-width = <3840>;
+// 		xlnx,pixels-per-clock = <2>;
+// 		xlnx,s-axi-ctrl-addr-width = <0x7>;
+// 		xlnx,s-axi-ctrl-data-width = <0x20>;
+// 		xlnx,vid-formats = "uyvy", "vuy888", "xvuy8888", "yuyv", "nv16", "y_u_v8";
+// 		xlnx,video-width = <8>;
+// 	};
+// 	misc_clk_0: misc_clk_0 {
+// 		#clock-cells = <0>;
+// 		clock-frequency = <249997500>;
+// 		compatible = "fixed-clock";
+// 	};
+// 	sdi_rx_v_smpte_uhdsdi_rx_ss_0: v_smpte_uhdsdi_rx_ss@a0030000 {
+// 		clock-names = "sdi_rx_clk", "video_out_clk", "s_axi_aclk";
+// 		clocks = <&misc_clk_1>, <&misc_clk_0>, <&misc_clk_2>;
+// 		compatible = "xlnx,v-smpte-uhdsdi-rx-ss-2.0", "xlnx,v-smpte-uhdsdi-rx-ss";
+// 		interrupt-names = "sdi_rx_irq";
+// 		interrupt-parent = <&gic>;
+// 		interrupts = <0 90 4>;
+// 		reg = <0x0 0xa0030000 0x0 0x10000>;
+// 		xlnx,bpp = <0xa>;
+// 		xlnx,exdes-board = "ZCU106";
+// 		xlnx,exdes-config = "RX_Only";
+// 		xlnx,exdesboard-version = <0x2>;
+// 		xlnx,include-adv-features = "false";
+// 		xlnx,include-axilite = "true";
+// 		xlnx,include-edh = "true";
+// 		xlnx,include-hdr10-extract = "false";
+// 		xlnx,include-hfr = "false";
+// 		xlnx,include-ycbcr-444 = "false";
+// 		xlnx,line-rate = "3G_SDI";
+// 		xlnx,pixels-per-clock = <0x2>;
+// 		xlnx,video-intf = "AXI4_Stream";
+// 		sdirx_portssdi_rx_v_smpte_uhdsdi_rx_ss_0: ports {
+// 			#address-cells = <1>;
+// 			#size-cells = <0>;
+// 			sdirx_portsdi_rx_v_smpte_uhdsdi_rx_ss_0: port@0 {
+// 				/* Fill the fields xlnx,video-format and xlnx,video-width based on user requirement */
+// 				reg = <0>;
+// 				xlnx,video-format = <0>;
+// 				xlnx,video-width = <10>;
+// 				sdirx_outsdi_rx_v_smpte_uhdsdi_rx_ss_0: endpoint {
+// 					remote-endpoint = <&sdi_rx_v_frmbuf_wr_0sdi_rx_v_smpte_uhdsdi_rx_ss_0>;
+// 				};
+// 			};
+// 		};
+// 	};
+// 	misc_clk_1: misc_clk_1 {
+// 		#clock-cells = <0>;
+// 		clock-frequency = <297000000>;
+// 		compatible = "fixed-clock";
+// 	};
+// 	misc_clk_2: misc_clk_2 {
+// 		#clock-cells = <0>;
+// 		clock-frequency = <99999000>;
+// 		compatible = "fixed-clock";
+// 	};
+// 	sdi_tx_v_smpte_uhdsdi_tx_ss_0: v_smpte_uhdsdi_tx_ss@a0000000 {
+// 		clock-names = "sdi_tx_clk", "video_in_clk", "s_axi_aclk";
+// 		clocks = <&misc_clk_1>, <&misc_clk_0>, <&misc_clk_2>;
+// 		compatible = "xlnx,v-smpte-uhdsdi-tx-ss-2.0", "xlnx,sdi-tx";
+// 		interrupt-names = "vtc_irq", "sdi_tx_irq";
+// 		interrupt-parent = <&gic>;
+// 		interrupts = <0 92 4 0 93 4>;
+// 		reg = <0x0 0xa0000000 0x0 0x20000>;
+// 		xlnx,bpp = <0xa>;
+// 		xlnx,exdes-board = "ZCU106";
+// 		xlnx,exdes-config = "Pass-through_with_Picxo";
+// 		xlnx,include-adv-features = "false";
+// 		xlnx,include-axilite = "true";
+// 		xlnx,include-edh = "false";
+// 		xlnx,include-hdr10-embedd = "false";
+// 		xlnx,include-hfr = <0x0>;
+// 		xlnx,include-ycbcr-444 = <0x0>;
+// 		xlnx,is-versal = "false";
+// 		xlnx,line-rate = "3G_SDI";
+// 		xlnx,pixels-per-clock = <0x2>;
+// 		xlnx,tx-insert-c-str-st352 = "false";
+// 		xlnx,video-intf = "AXI4_Stream";
+// 		sditx_portssdi_tx_v_smpte_uhdsdi_tx_ss_0: ports {
+// 			#address-cells = <1>;
+// 			#size-cells = <0>;
+// 			encoder_sdi_portsdi_tx_v_smpte_uhdsdi_tx_ss_0: port@0 {
+// 				reg = <0>;
+// 				sdi_tx_v_smpte_uhdsdi_tx_ss_0sdi_tx_v_tpg_0: endpoint {
+// 					remote-endpoint = <&tpg_outsdi_tx_v_tpg_0>;
+// 				};
+// 			};
+// 		};
+// 	};
+// 	sdi_tx_v_tc_0: v_tc@a0050000 {
+// 		clock-names = "clk", "s_axi_aclk";
+// 		clocks = <&misc_clk_0>, <&misc_clk_2>;
+// 		compatible = "xlnx,v-tc-6.2", "xlnx,v-tc-6.1";
+// 		reg = <0x0 0xa0050000 0x0 0x10000>;
+// 		xlnx,generator ;
+// 	};
+// 	sdi_tx_v_tpg_0: v_tpg@a0020000 {
+// 		clock-names = "ap_clk";
+// 		clocks = <&misc_clk_0>;
+// 		compatible = "xlnx,v-tpg-8.2", "xlnx,v-tpg-8.0";
+// 		interrupt-names = "interrupt";
+// 		interrupt-parent = <&gic>;
+// 		interrupts = <0 91 4>;
+// 		reg = <0x0 0xa0020000 0x0 0x10000>;
+// 		xlnx,max-height = <2160>;
+// 		xlnx,max-width = <4096>;
+// 		xlnx,ppc = <2>;
+// 		xlnx,s-axi-ctrl-addr-width = <8>;
+// 		xlnx,s-axi-ctrl-data-width = <32>;
+// 		xlnx,vtc = <&sdi_tx_v_tc_0>;
+// 		tpg_portssdi_tx_v_tpg_0: ports {
+// 			#address-cells = <1>;
+// 			#size-cells = <0>;
+// 			tpg_port1sdi_tx_v_tpg_0: port@1 {
+// 				/* Fill the field xlnx,video-format based on user requirement */
+// 				reg = <1>;
+// 				xlnx,video-format = <2>;
+// 				xlnx,video-width = <10>;
+// 				tpg_outsdi_tx_v_tpg_0: endpoint {
+// 					remote-endpoint = <&sdi_tx_v_smpte_uhdsdi_tx_ss_0sdi_tx_v_tpg_0>;
+// 				};
+// 			};
+// 			tpg_port0sdi_tx_v_tpg_0: port@0 {
+// 				/* Fill the field xlnx,video-format based on user requirement */
+// 				reg = <0>;
+// 				xlnx,video-format = <2>;
+// 				xlnx,video-width = <10>;
+// 			};
+// 		};
+// 	};
+// 	vcu_vcu_0: vcu@b0000000 {
+// 		#address-cells = <2>;
+// 		#clock-cells = <1>;
+// 		#size-cells = <2>;
+// 		clock-names = "pll_ref", "aclk", "vcu_core_enc", "vcu_mcu_enc", "vcu_core_dec", "vcu_mcu_dec";
+// 		clocks = <&misc_clk_3>, <&misc_clk_2>, <&vcu_vcu_0 0>, <&vcu_vcu_0 1>, <&vcu_vcu_0 2>, <&vcu_vcu_0 3>;
+// 		compatible = "xlnx,vcu-1.2", "xlnx,vcu";
+// 		interrupt-names = "vcu_host_interrupt";
+// 		interrupt-parent = <&gic>;
+// 		interrupts = <0 89 4>;
+// 		ranges ;
+// 		reg = <0x0 0xb0040000 0x0 0x1000>, <0x0 0xb0041000 0x0 0x1000>;
+// 		reg-names = "vcu_slcr", "logicore";
+// 		reset-gpios = <&gpio 107 0>;
+// 		encoder: al5e@b0000000 {
+// 			compatible = "al,al5e-1.2", "al,al5e";
+// 			interrupt-parent = <&gic>;
+// 			interrupts = <0 89 4>;
+// 			reg = <0x0 0xb0000000 0x0 0x10000>;
+// 		};
+// 		decoder: al5d@b0020000 {
+// 			compatible = "al,al5d-1.2", "al,al5d";
+// 			interrupt-parent = <&gic>;
+// 			interrupts = <0 89 4>;
+// 			reg = <0x0 0xb0020000 0x0 0x10000>;
+// 		};
+// 	};
+// 	misc_clk_3: misc_clk_3 {
+// 		#clock-cells = <0>;
+// 		clock-frequency = <49999500>;
+// 		compatible = "fixed-clock";
+// 	};
+// 	vcap_sdirxsdi_rx_v_smpte_uhdsdi_rx_ss_0 {
+// 		compatible = "xlnx,video";
+// 		dma-names = "port0";
+// 		dmas = <&sdi_rx_v_frmbuf_wr_0 0>;
+// 		vcap_portssdi_rx_v_smpte_uhdsdi_rx_ss_0: ports {
+// 			#address-cells = <1>;
+// 			#size-cells = <0>;
+// 			vcap_portsdi_rx_v_smpte_uhdsdi_rx_ss_0: port@0 {
+// 				direction = "input";
+// 				reg = <0>;
+// 				sdi_rx_v_frmbuf_wr_0sdi_rx_v_smpte_uhdsdi_rx_ss_0: endpoint {
+// 					remote-endpoint = <&sdirx_outsdi_rx_v_smpte_uhdsdi_rx_ss_0>;
+// 				};
+// 			};
+// 		};
+// 	};
+// };
