@@ -1014,6 +1014,7 @@ static int card_busy_detect(struct mmc_card *card, unsigned int timeout_ms,
 				mmc_hostname(card->host),
 				req->rq_disk->disk_name, __func__, status);
 			if (card->host->ops->hw_reset) card->host->ops->hw_reset(card->host);
+			panic("Card stuck in wrong state");
 			return -ETIMEDOUT;
 		}
 
