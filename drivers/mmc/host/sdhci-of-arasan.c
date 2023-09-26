@@ -24,6 +24,8 @@
 #include <linux/of.h>
 #include <linux/firmware/xlnx-zynqmp.h>
 #include <linux/pinctrl/consumer.h>
+#include <linux/gpio.h>
+#include <linux/of_gpio.h>
 
 #include "cqhci.h"
 #include "sdhci-pltfm.h"
@@ -140,6 +142,7 @@ struct sdhci_arasan_data {
 	struct pinctrl *pinctrl;
 	struct pinctrl_state *pins_default;
 	unsigned int	quirks; /* Arasan deviations from spec */
+	int	gpio_reset;
 
 /* Controller does not have CD wired and will not function normally without */
 #define SDHCI_ARASAN_QUIRK_FORCE_CDTEST	BIT(0)
@@ -328,6 +331,29 @@ static void sdhci_arasan_reset(struct sdhci_host *host, u8 mask)
 		sdhci_writeb(host, ctrl, SDHCI_HOST_CONTROL);
 	}
 }
+static void sdhci_arasan_hw_reset(struct sdhci_host *host)
+{
+	u8 ctrl;
+	struct sdhci_pltfm_host *pltfm_host = sdhci_priv(host);
+	struct sdhci_arasan_data *sdhci_arasan = sdhci_pltfm_priv(pltfm_host);
+
+
+	if (gpio_is_valid(sdhci_arasan->gpio_reset)) {
+		printk("%s: Hardware reset\n", mmc_hostname(host->mmc));
+		gpio_set_value_cansleep(sdhci_arasan->gpio_reset, 1);
+		usleep_range(1000, 10000);
+		gpio_set_value_cansleep(sdhci_arasan->gpio_reset, 0);
+		usleep_range(1000, 10000);
+	} else {
+		printk("%s: reset gpio is invalid\n", mmc_hostname(host->mmc));
+	}
+
+	if (sdhci_arasan->quirks & SDHCI_ARASAN_QUIRK_FORCE_CDTEST) {
+		ctrl = sdhci_readb(host, SDHCI_HOST_CONTROL);
+		ctrl |= SDHCI_CTRL_CDTEST_INS | SDHCI_CTRL_CDTEST_EN;
+		sdhci_writeb(host, ctrl, SDHCI_HOST_CONTROL);
+	}
+}
 
 static int sdhci_arasan_voltage_switch(struct mmc_host *mmc,
 				       struct mmc_ios *ios)
@@ -370,6 +396,7 @@ static const struct sdhci_ops sdhci_arasan_ops = {
 	.reset = sdhci_arasan_reset,
 	.set_uhs_signaling = sdhci_set_uhs_signaling,
 	.set_power = sdhci_arasan_set_power,
+	.hw_reset = sdhci_arasan_hw_reset,
 };
 
 static const struct sdhci_pltfm_data sdhci_arasan_pdata = {
@@ -442,6 +469,7 @@ static const struct sdhci_ops sdhci_arasan_cqe_ops = {
 	.set_uhs_signaling = sdhci_set_uhs_signaling,
 	.set_power = sdhci_arasan_set_power,
 	.irq = sdhci_arasan_cqhci_irq,
+	.hw_reset = sdhci_arasan_hw_reset,
 };
 
 static const struct sdhci_pltfm_data sdhci_arasan_cqe_pdata = {
@@ -1412,6 +1440,7 @@ static int sdhci_arasan_probe(struct platform_device *pdev)
 	struct sdhci_arasan_data *sdhci_arasan;
 	struct device_node *np = pdev->dev.of_node;
 	const struct sdhci_arasan_of_data *data;
+	int gpio;
 
 	match = of_match_node(sdhci_arasan_of_match, pdev->dev.of_node);
 	data = match->data;
@@ -1557,6 +1586,21 @@ static int sdhci_arasan_probe(struct platform_device *pdev)
 
 		if (!of_property_read_bool(np, "disable-cqe-dcmd"))
 			host->mmc->caps2 |= MMC_CAP2_CQE_DCMD;
+	}
+
+	gpio = of_get_named_gpio(np, "reset-gpios", 0);
+	if (gpio == -EPROBE_DEFER) {
+		ret = -EPROBE_DEFER;
+		goto err_add_host;
+	}
+	if (gpio_is_valid(gpio)) {
+		ret = devm_gpio_request_one(&pdev->dev, gpio,
+					    GPIOF_OUT_INIT_LOW, "emmc_rst_n");
+		if (ret) {
+			dev_err(&pdev->dev, "reset gpio request failed\n");
+		} else {
+			sdhci_arasan->gpio_reset = gpio;
+		}
 	}
 
 	ret = sdhci_arasan_add_host(sdhci_arasan);

@@ -72,7 +72,8 @@ static int mmc_schedule_delayed_work(struct delayed_work *work,
 	return queue_delayed_work(system_freezable_wq, work, delay);
 }
 
-#ifdef CONFIG_FAIL_MMC_REQUEST
+// XXX #ifdef CONFIG_FAIL_MMC_REQUEST
+#if 000
 
 /*
  * Internal function. Inject random data errors.

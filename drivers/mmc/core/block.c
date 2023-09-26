@@ -1001,6 +1001,10 @@ static int card_busy_detect(struct mmc_card *card, unsigned int timeout_ms,
 		if (resp_errs)
 			*resp_errs |= status;
 
+		// *** error injection ***
+		if (should_fail(&card->host->fail_mmc_request, 4096)) {
+			done = true;
+		}
 		/*
 		 * Timeout if the device never becomes ready for data and never
 		 * leaves the program state.
@@ -1009,6 +1013,7 @@ static int card_busy_detect(struct mmc_card *card, unsigned int timeout_ms,
 			pr_err("%s: Card stuck in wrong state! %s %s status: %#x\n",
 				mmc_hostname(card->host),
 				req->rq_disk->disk_name, __func__, status);
+			if (card->host->ops->hw_reset) card->host->ops->hw_reset(card->host);
 			return -ETIMEDOUT;
 		}
 
