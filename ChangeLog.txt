@@ -1,0 +1,19 @@
+2023-9-25
+  kernel version 5.4.0-hellotecno-20230925 #133
+  eMMC が busy 状態でハングアップしたことを検出したら、カーネルパニックを発生させる。
+　その結果 reboot-on-panic の設定に従ってリブートする。
+
+2023-9-13
+  kernel version 5.4.0-hellotecno-20230913 #131
+　USB-LAN 変換器を使用したとき使用されるデバイスドライバをカーネルモジュールではなく組み込みドライバに変更
+　カーネルのバージョン名を 5.4.0-xilinx から 5.4.0-hellotecno-20230913 に変更
+
+2023-9-9
+  kernel version 5.4.0-xilinx #127
+  eMMC が busy 状態でハングアップしたことを検出したら、ハードウェアリセットを発行して復旧を試みる。
+　debugfs を有効にし、mmc のエラーを強制的に発生させることができる仕組みを導入した（テスト専用）
+　　　sudo mmc-fault-injection.sh
+
+2023-7-22
+  kernel version 5.4.0-xilinx #115
+  eMMCのクロックを50MHｚから25MHzに変更
