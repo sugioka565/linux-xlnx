@@ -2126,14 +2126,18 @@ int mmc_hw_reset(struct mmc_host *host)
 		mmc_bus_put(host);
 		return -EOPNOTSUPP;
 	}
+	pr_warn("%s: trying to HW reset card\n", mmc_hostname(host));
 
 	ret = host->bus_ops->hw_reset(host);
 	mmc_bus_put(host);
 
-	if (ret)
+	if (ret) {
 		pr_warn("%s: tried to HW reset card, got error %d\n",
 			mmc_hostname(host), ret);
-
+		panic("MMC Card reset failed");
+	} else {
+		pr_warn("%s: HW reset succeeded\n", mmc_hostname(host));
+	}
 	return ret;
 }
 EXPORT_SYMBOL(mmc_hw_reset);

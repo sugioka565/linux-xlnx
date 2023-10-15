@@ -584,8 +584,8 @@ static int mmc_decode_ext_csd(struct mmc_card *card, u8 *ext_csd)
 	if (card->ext_csd.rev >= 6) {
 		card->ext_csd.feature_support |= MMC_DISCARD_FEATURE;
 
-		card->ext_csd.generic_cmd6_time = 10 *
-			ext_csd[EXT_CSD_GENERIC_CMD6_TIME];
+		// card->ext_csd.generic_cmd6_time = 10 *
+		// 	ext_csd[EXT_CSD_GENERIC_CMD6_TIME];
 		card->ext_csd.power_off_longtime = 10 *
 			ext_csd[EXT_CSD_POWER_OFF_LONG_TIME];
 
@@ -649,6 +649,7 @@ static int mmc_decode_ext_csd(struct mmc_card *card, u8 *ext_csd)
 				 card->ext_csd.cmdq_depth);
 		}
 	}
+	pr_info("%s: generic_cmd6_time=%u\n", mmc_hostname(card->host), card->ext_csd.generic_cmd6_time);
 out:
 	return err;
 }

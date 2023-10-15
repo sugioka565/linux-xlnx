@@ -643,6 +643,7 @@
 	xlnx,has-wp = <0x0>;
 	no-1-8-v;
 	reset-gpios = <&gpio0 108 GPIO_ACTIVE_HIGH>;
+	cap-mmc-hw-reset;
 };
 &uart0 {
 	cts-override ;
