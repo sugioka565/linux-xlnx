@@ -572,6 +572,9 @@ static int mmc_decode_ext_csd(struct mmc_card *card, u8 *ext_csd)
 				MMC_BLK_DATA_AREA_RPMB);
 		}
 	}
+#if 111
+	card->ext_csd.rst_n_function = ext_csd[EXT_CSD_RST_N_FUNCTION];
+#endif
 
 	card->ext_csd.raw_erased_mem_count = ext_csd[EXT_CSD_ERASED_MEM_CONT];
 	if (ext_csd[EXT_CSD_ERASED_MEM_CONT])
@@ -2157,6 +2160,7 @@ static int mmc_can_reset(struct mmc_card *card)
 static int _mmc_hw_reset(struct mmc_host *host)
 {
 	struct mmc_card *card = host->card;
+	int ret;
 
 	/*
 	 * In the case of recovery, we can't expect flushing the cache to work
@@ -2172,11 +2176,15 @@ static int _mmc_hw_reset(struct mmc_host *host)
 		/* Set initial state and call mmc_set_ios */
 		mmc_set_initial_state(host);
 	} else {
+		pr_warn("%s: No HW reset capability. Do a brute force power cycle\n", mmc_hostname(host));
 		/* Do a brute force power cycle */
 		mmc_power_cycle(host, card->ocr);
 		mmc_pwrseq_reset(host);
 	}
-	return mmc_init_card(host, card->ocr, card);
+	pr_warn("%s: Re-initializing card\n", mmc_hostname(host));
+	ret = mmc_init_card(host, card->ocr, card);
+	pr_warn("%s: Card initialized\n", mmc_hostname(host));
+	return ret;
 }
 
 static const struct mmc_bus_ops mmc_ops = {
