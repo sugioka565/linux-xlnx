@@ -52,6 +52,12 @@
 *.zst
 Module.symvers
 modules.order
+*.builtin
+*.moc
+kernel/config_data.h
+scripts/conmakehash
+scripts/pnmtologo
+scripts/sortextable
 
 #
 # Top-level generic files
