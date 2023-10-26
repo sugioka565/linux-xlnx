@@ -494,9 +494,9 @@ static void sdhci_arasan_hw_reset(struct sdhci_host *host)
 
 	if (gpio_is_valid(sdhci_arasan->gpio_reset)) {
 		printk("%s: Hardware reset\n", mmc_hostname(host->mmc));
-		gpio_set_value_cansleep(sdhci_arasan->gpio_reset, 1);
+		gpio_set_value(sdhci_arasan->gpio_reset, 1);
 		usleep_range(1000, 10000);
-		gpio_set_value_cansleep(sdhci_arasan->gpio_reset, 0);
+		gpio_set_value(sdhci_arasan->gpio_reset, 0);
 		usleep_range(1000, 10000);
 	} else {
 		printk("%s: reset gpio is invalid\n", mmc_hostname(host->mmc));
