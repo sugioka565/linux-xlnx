@@ -226,6 +226,8 @@ void sdhci_reset(struct sdhci_host *host, u8 mask)
 				mmc_hostname(host->mmc), (int)mask);
 			sdhci_err_stats_inc(host, CTRL_TIMEOUT);
 			sdhci_dumpregs(host);
+			panic("%s: Reset 0x%x never completed.\n",
+				mmc_hostname(host->mmc), (int)mask);
 			return;
 		}
 		udelay(10);

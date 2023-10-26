@@ -522,6 +522,12 @@ int __mmc_poll_for_busy(struct mmc_host *host, unsigned int period_us,
 		if (err)
 			return err;
 
+		// *** error injection ***
+		if (should_fail(&host->fail_mmc_request, 4096)) {
+			pr_err("%s: Card error injection\n", mmc_hostname(host));
+			return -ETIMEDOUT;
+		}
+
 		/* Timeout if the device still remains busy. */
 		if (expired && busy) {
 			pr_err("%s: Card stuck being busy! %s\n",

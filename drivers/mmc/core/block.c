@@ -1810,7 +1810,7 @@ static inline bool mmc_blk_cmd_started(struct mmc_blk_request *brq)
  *	3. try to reset the card
  *	4. read one sector at a time
  */
-static void mmc_blk_mq_rw_recovery(struct mmc_queue *mq, struct request *req)
+static void mmc_blk_mq_rw_recovery(struct mmc_queue *mq, struct request *req, int orig_err)
 {
 	int type = rq_data_dir(req) == READ ? MMC_BLK_READ : MMC_BLK_WRITE;
 	struct mmc_queue_req *mqrq = req_to_mmc_queue_req(req);
@@ -1821,6 +1821,7 @@ static void mmc_blk_mq_rw_recovery(struct mmc_queue *mq, struct request *req)
 	u32 blocks;
 	int err;
 
+	pr_info("%s: mmc_blk_mq_rw_recovery started. err=%d\n", req->q->disk->disk_name, orig_err);
 	/*
 	 * Some errors the host driver might not have seen. Set the number of
 	 * bytes transferred to zero in that case.
@@ -1862,12 +1863,17 @@ static void mmc_blk_mq_rw_recovery(struct mmc_queue *mq, struct request *req)
 			brq->data.bytes_xfered = blocks << 9;
 	}
 
+	pr_info("%s: Reset if the card is in a bad state. err=%d, orig_err=%d\n", req->q->disk->disk_name, err, orig_err);
 	/* Reset if the card is in a bad state */
-	if (!mmc_host_is_spi(mq->card->host) &&
-	    err && mmc_blk_reset(md, card->host, type)) {
-		pr_err("%s: recovery failed!\n", req->q->disk->disk_name);
-		mqrq->retries = MMC_NO_RETRIES;
-		return;
+	if (!mmc_host_is_spi(mq->card->host) && (err || orig_err == -ETIMEDOUT)) {
+		if (mmc_blk_reset(md, card->host, type)) {
+			pr_err("%s: recovery failed!\n", req->q->disk->disk_name);
+			mqrq->retries = MMC_NO_RETRIES;
+			panic("%s: recovery failed!\n", req->q->disk->disk_name);
+			return;
+		} else {
+			panic("%s: recovery succeeded.\n", req->q->disk->disk_name);
+		}
 	}
 
 	/*
@@ -1877,6 +1883,7 @@ static void mmc_blk_mq_rw_recovery(struct mmc_queue *mq, struct request *req)
 	if (brq->data.bytes_xfered)
 		return;
 
+	pr_info("%s: Reset before last retry. current retry = %d\n", req->q->disk->disk_name, mqrq->retries);
 	/* Reset before last retry */
 	if (mqrq->retries + 1 == MMC_MAX_RETRIES &&
 	    mmc_blk_reset(md, card->host, type))
@@ -2082,10 +2089,11 @@ static void mmc_blk_mq_poll_completion(struct mmc_queue *mq,
 {
 	struct mmc_queue_req *mqrq = req_to_mmc_queue_req(req);
 	struct mmc_host *host = mq->card->host;
+	int err = 0;
 
-	if (mmc_blk_rq_error(&mqrq->brq) ||
-	    mmc_blk_card_busy(mq->card, req)) {
-		mmc_blk_mq_rw_recovery(mq, req);
+	if ((err = mmc_blk_rq_error(&mqrq->brq)) ||
+	    (err = mmc_blk_card_busy(mq->card, req))) {
+		mmc_blk_mq_rw_recovery(mq, req, err);
 	} else {
 		mmc_blk_rw_reset_success(mq, req);
 		mmc_retune_release(host);
@@ -2147,7 +2155,7 @@ void mmc_blk_mq_recovery(struct mmc_queue *mq)
 
 	if (mmc_blk_rq_error(&mqrq->brq)) {
 		mmc_retune_hold_now(host);
-		mmc_blk_mq_rw_recovery(mq, req);
+		mmc_blk_mq_rw_recovery(mq, req, 0);
 	}
 
 	mmc_blk_urgent_bkops(mq, mqrq);
