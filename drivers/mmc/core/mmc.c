@@ -572,9 +572,6 @@ static int mmc_decode_ext_csd(struct mmc_card *card, u8 *ext_csd)
 				MMC_BLK_DATA_AREA_RPMB);
 		}
 	}
-#if 111
-	card->ext_csd.rst_n_function = ext_csd[EXT_CSD_RST_N_FUNCTION];
-#endif
 
 	card->ext_csd.raw_erased_mem_count = ext_csd[EXT_CSD_ERASED_MEM_CONT];
 	if (ext_csd[EXT_CSD_ERASED_MEM_CONT])
@@ -586,9 +583,10 @@ static int mmc_decode_ext_csd(struct mmc_card *card, u8 *ext_csd)
 	card->ext_csd.generic_cmd6_time = DEFAULT_CMD6_TIMEOUT_MS;
 	if (card->ext_csd.rev >= 6) {
 		card->ext_csd.feature_support |= MMC_DISCARD_FEATURE;
-
-		// card->ext_csd.generic_cmd6_time = 10 *
-		// 	ext_csd[EXT_CSD_GENERIC_CMD6_TIME];
+#if 000
+		card->ext_csd.generic_cmd6_time = 10 *
+			ext_csd[EXT_CSD_GENERIC_CMD6_TIME];
+#endif
 		card->ext_csd.power_off_longtime = 10 *
 			ext_csd[EXT_CSD_POWER_OFF_LONG_TIME];
 
@@ -635,6 +633,7 @@ static int mmc_decode_ext_csd(struct mmc_card *card, u8 *ext_csd)
 			ext_csd[EXT_CSD_DEVICE_LIFE_TIME_EST_TYP_B];
 	}
 
+#if 000
 	/* eMMC v5.1 or later */
 	if (card->ext_csd.rev >= 8) {
 		card->ext_csd.cmdq_support = ext_csd[EXT_CSD_CMDQ_SUPPORT] &
@@ -652,7 +651,9 @@ static int mmc_decode_ext_csd(struct mmc_card *card, u8 *ext_csd)
 				 card->ext_csd.cmdq_depth);
 		}
 	}
-	pr_info("%s: generic_cmd6_time=%u\n", mmc_hostname(card->host), card->ext_csd.generic_cmd6_time);
+#endif
+	pr_info("%s: ext_csd.rev=%d generic_cmd6_time=%u resetn_function=%u\n", mmc_hostname(card->host), card->ext_csd.rev, card->ext_csd.generic_cmd6_time, card->ext_csd.rst_n_function);
+	pr_info("%s: cmdq_support=%d cmdq_depth=%u\n", mmc_hostname(card->host), card->ext_csd.cmdq_support, card->ext_csd.cmdq_depth);
 out:
 	return err;
 }

@@ -49,6 +49,7 @@
 /* The max erase timeout, used when host->max_busy_timeout isn't specified */
 #define MMC_ERASE_TIMEOUT_MS	(60 * 1000) /* 60 s */
 #define SD_DISCARD_TIMEOUT_MS	(250)
+#define MMC_COMPLETION_TIMEOUT	(10 * 1000)
 
 static const unsigned freqs[] = { 400000, 300000, 200000, 100000 };
 
@@ -72,8 +73,7 @@ static int mmc_schedule_delayed_work(struct delayed_work *work,
 	return queue_delayed_work(system_freezable_wq, work, delay);
 }
 
-// XXX #ifdef CONFIG_FAIL_MMC_REQUEST
-#if 000
+#ifdef CONFIG_FAIL_MMC_REQUEST
 
 /*
  * Internal function. Inject random data errors.
@@ -262,26 +262,69 @@ static void __mmc_start_request(struct mmc_host *host, struct mmc_request *mrq)
 	host->ops->request(host, mrq);
 }
 
+#define LOG_BUFF_CNT 128
+#define LOG_BUFF_LEN 256
+static char *log_ptr[LOG_BUFF_CNT];
+static int log_cnt = 0;
+
+void mmc_mrq_log_output(void)
+{
+	int i;
+
+	printk("mmc_mrq_log_output: log_cnt=%d\n", log_cnt);
+	for (i = 0; i < log_cnt; i++) {
+		printk(KERN_ERR "%s", log_ptr[i]);
+	}
+	log_cnt = 0;
+}
+EXPORT_SYMBOL(mmc_mrq_log_output);
+
+static void mmc_mrq_log(const char *fmt, ...)
+{
+	va_list args;
+	static int init = 0;
+	int i;
+
+	if (init == 0) {
+		init = 1;
+		for (i = 0; i < LOG_BUFF_CNT; i++)
+			log_ptr[i] = kmalloc(LOG_BUFF_LEN, GFP_KERNEL);
+	}
+	if (log_cnt >= LOG_BUFF_CNT) {
+		char *tmp = log_ptr[0];
+		for (i = 0; i < LOG_BUFF_CNT - 1; i++)
+			log_ptr[i] = log_ptr[i + 1];
+		log_ptr[LOG_BUFF_CNT - 1] = tmp;
+	} else {
+		log_cnt++;
+	}
+	char *p = log_ptr[log_cnt - 1];
+	va_start(args, fmt);
+	vsnprintf(p, LOG_BUFF_LEN, fmt, args);
+	va_end(args);
+	pr_debug("%s", p);
+}
+
 static void mmc_mrq_pr_debug(struct mmc_host *host, struct mmc_request *mrq,
 			     bool cqe)
 {
 	if (mrq->sbc) {
-		pr_debug("<%s: starting CMD%u arg %08x flags %08x>\n",
+		mmc_mrq_log("<%s: starting CMD%u arg %08x flags %08x>\n",
 			 mmc_hostname(host), mrq->sbc->opcode,
 			 mrq->sbc->arg, mrq->sbc->flags);
 	}
 
 	if (mrq->cmd) {
-		pr_debug("%s: starting %sCMD%u arg %08x flags %08x\n",
+		mmc_mrq_log("%s: starting %sCMD%u arg %08x flags %08x\n",
 			 mmc_hostname(host), cqe ? "CQE direct " : "",
 			 mrq->cmd->opcode, mrq->cmd->arg, mrq->cmd->flags);
 	} else if (cqe) {
-		pr_debug("%s: starting CQE transfer for tag %d blkaddr %u\n",
+		mmc_mrq_log("%s: starting CQE transfer for tag %d blkaddr %u\n",
 			 mmc_hostname(host), mrq->tag, mrq->data->blk_addr);
 	}
 
 	if (mrq->data) {
-		pr_debug("%s:     blksz %d blocks %d flags %08x "
+		mmc_mrq_log("%s:     blksz %d blocks %d flags %08x "
 			"tsac %d ms nsac %d\n",
 			mmc_hostname(host), mrq->data->blksz,
 			mrq->data->blocks, mrq->data->flags,
@@ -290,7 +333,7 @@ static void mmc_mrq_pr_debug(struct mmc_host *host, struct mmc_request *mrq,
 	}
 
 	if (mrq->stop) {
-		pr_debug("%s:     CMD%u arg %08x flags %08x\n",
+		mmc_mrq_log("%s:     CMD%u arg %08x flags %08x\n",
 			 mmc_hostname(host), mrq->stop->opcode,
 			 mrq->stop->arg, mrq->stop->flags);
 	}
@@ -367,13 +410,13 @@ static void mmc_wait_done(struct mmc_request *mrq)
 static inline void mmc_wait_ongoing_tfr_cmd(struct mmc_host *host)
 {
 	struct mmc_request *ongoing_mrq = READ_ONCE(host->ongoing_mrq);
-
+	unsigned long timeout = msecs_to_jiffies(MMC_COMPLETION_TIMEOUT) + 1;
 	/*
 	 * If there is an ongoing transfer, wait for the command line to become
 	 * available.
 	 */
 	if (ongoing_mrq && !completion_done(&ongoing_mrq->cmd_completion))
-		wait_for_completion(&ongoing_mrq->cmd_completion);
+		wait_for_completion_timeout(&ongoing_mrq->cmd_completion, timeout);
 }
 
 static int __mmc_start_req(struct mmc_host *host, struct mmc_request *mrq)
@@ -398,9 +441,11 @@ static int __mmc_start_req(struct mmc_host *host, struct mmc_request *mrq)
 void mmc_wait_for_req_done(struct mmc_host *host, struct mmc_request *mrq)
 {
 	struct mmc_command *cmd;
+	unsigned long timeout = msecs_to_jiffies(MMC_COMPLETION_TIMEOUT) + 1;
 
 	while (1) {
-		wait_for_completion(&mrq->completion);
+		
+		wait_for_completion_timeout(&mrq->completion, timeout);
 
 		cmd = mrq->cmd;
 
@@ -2134,7 +2179,6 @@ int mmc_hw_reset(struct mmc_host *host)
 	if (ret) {
 		pr_warn("%s: tried to HW reset card, got error %d\n",
 			mmc_hostname(host), ret);
-		panic("MMC Card reset failed");
 	} else {
 		pr_warn("%s: HW reset succeeded\n", mmc_hostname(host));
 	}

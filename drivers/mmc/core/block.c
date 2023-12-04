@@ -57,8 +57,6 @@
 #include "quirks.h"
 #include "sd_ops.h"
 
-#define FAULT_INJECTED_ERROR_CODE 99999
-
 MODULE_ALIAS("mmc:block");
 #ifdef MODULE_PARAM_PREFIX
 #undef MODULE_PARAM_PREFIX
@@ -1003,11 +1001,6 @@ static int card_busy_detect(struct mmc_card *card, unsigned int timeout_ms,
 		if (resp_errs)
 			*resp_errs |= status;
 
-		// *** error injection ***
-		if (should_fail(&card->host->fail_mmc_request, 4096)) {
-			*resp_errs |= 0xe00;
-			return -FAULT_INJECTED_ERROR_CODE;
-		}
 		/*
 		 * Timeout if the device never becomes ready for data and never
 		 * leaves the program state.
@@ -1663,8 +1656,11 @@ static int mmc_blk_send_stop(struct mmc_card *card, unsigned int timeout)
 		/* Some hosts wait for busy anyway, so provide a busy timeout */
 		.busy_timeout = timeout,
 	};
+	int err;
 
-	return mmc_wait_for_cmd(card->host, &cmd, 5);
+	err = mmc_wait_for_cmd(card->host, &cmd, 5);
+	if (err) pr_err("%s: mmc_blk_send_stop. err=%d\n", mmc_hostname(card->host), err);
+	return err;
 }
 
 static int mmc_blk_fix_state(struct mmc_card *card, struct request *req)
@@ -1674,6 +1670,8 @@ static int mmc_blk_fix_state(struct mmc_card *card, struct request *req)
 	unsigned int timeout = mmc_blk_data_timeout_ms(card->host, &brq->data);
 	int err;
 
+	pr_warn("%s: mmc_blk_fix_state. timeout=%ums\n", mmc_hostname(card->host), timeout);
+
 	mmc_retune_hold_now(card->host);
 
 	mmc_blk_send_stop(card, timeout);
@@ -1682,6 +1680,7 @@ static int mmc_blk_fix_state(struct mmc_card *card, struct request *req)
 
 	mmc_retune_release(card->host);
 
+	pr_warn("%s: mmc_blk_fix_state. err=%d\n", mmc_hostname(card->host), err);
 	return err;
 }
 
@@ -1805,10 +1804,14 @@ static void mmc_blk_mq_rw_recovery(struct mmc_queue *mq, struct request *req, in
 	u32 status;
 	u32 blocks;
 	int err;
-	static int fault_injection_cnt = 0;
+	int timeout = 10000;
 
+	void mmc_mrq_log_output(void);
+	pr_err("%s: mmc_mrq_log_output\n", req->rq_disk->disk_name);
+	mmc_mrq_log_output();
 	pr_err("%s: mmc_blk_mq_rw_recovery prev_err=%d\n", req->rq_disk->disk_name, prev_err);
-	if (prev_err != -FAULT_INJECTED_ERROR_CODE) {
+	err = card_busy_detect(card, timeout, req, NULL);
+	pr_err("%s: mmc_blk_mq_rw_recovery card_busy_detect=%d\n", req->rq_disk->disk_name, err);
 	/*
 	 * Some errors the host driver might not have seen. Set the number of
 	 * bytes transferred to zero in that case.
@@ -1817,14 +1820,18 @@ static void mmc_blk_mq_rw_recovery(struct mmc_queue *mq, struct request *req, in
 	if (err || mmc_blk_status_error(req, status))
 		brq->data.bytes_xfered = 0;
 
+	pr_err("%s: mmc_blk_mq_rw_recovery: __mmc_send_status=%d\n", req->rq_disk->disk_name, err);
 	mmc_retune_release(card->host);
 
 	/*
 	 * Try again to get the status. This also provides an opportunity for
 	 * re-tuning.
 	 */
-	if (err)
+	if (err) {
 		err = __mmc_send_status(card, &status, 0);
+		pr_err("%s: mmc_blk_mq_rw_recovery: __mmc_send_status(2)=%d\n", req->rq_disk->disk_name, err);
+	}
+	mmc_mrq_log_output();
 
 	/*
 	 * Nothing more to do after the number of bytes transferred has been
@@ -1835,8 +1842,11 @@ static void mmc_blk_mq_rw_recovery(struct mmc_queue *mq, struct request *req, in
 
 	/* Try to get back to "tran" state */
 	if (!mmc_host_is_spi(mq->card->host) &&
-	    (err || !mmc_blk_in_tran_state(status)))
+	    (err || !mmc_blk_in_tran_state(status))) {
+		pr_err("%s: mmc_blk_mq_rw_recovery: Try to get back to tran state\n", req->rq_disk->disk_name);
 		err = mmc_blk_fix_state(mq->card, req);
+	}
+	mmc_mrq_log_output();
 
 	/*
 	 * Special case for SD cards where the card might record the number of
@@ -1849,39 +1859,44 @@ static void mmc_blk_mq_rw_recovery(struct mmc_queue *mq, struct request *req, in
 		else
 			brq->data.bytes_xfered = blocks << 9;
 	}
-	} else {
-		err = prev_err;
-		fault_injection_cnt += 1;
-		if (fault_injection_cnt >= 2) panic("%s: fault injected 2 times\n", req->rq_disk->disk_name);
-	}
+	mmc_mrq_log_output();
+
 	/* Reset if the card is in a bad state */
-	if (!mmc_host_is_spi(mq->card->host) &&
-	    err && mmc_blk_reset(md, card->host, type)) {
-		pr_err("%s: recovery failed!\n", req->rq_disk->disk_name);
-		mqrq->retries = MMC_NO_RETRIES;
-		return;
+	if (!mmc_host_is_spi(mq->card->host) && err) {
+		pr_err("%s: Reset if the card is in a bad state!\n", req->rq_disk->disk_name);
+		if (mmc_blk_reset(md, card->host, type)) {
+			pr_err("%s: reset failed!\n", req->rq_disk->disk_name);
+			mqrq->retries = MMC_NO_RETRIES;
+			mmc_mrq_log_output();
+			return;
+		}
 	}
 
 	/*
 	 * If anything was done, just return and if there is anything remaining
 	 * on the request it will get requeued.
 	 */
-	if (brq->data.bytes_xfered)
+	if (brq->data.bytes_xfered) {
+		pr_err("%s: anything was done, just return\n", req->rq_disk->disk_name);
 		return;
+	}
 
 	/* Reset before last retry */
 	if (mqrq->retries + 1 == MMC_MAX_RETRIES) {
+		pr_err("%s: Reset before last retry\n", req->rq_disk->disk_name);
 		mmc_blk_reset(md, card->host, type);
-		panic("%s: recovery failed in %d retries\n", req->rq_disk->disk_name, mqrq->retries);
 	}
 
 	/* Command errors fail fast, so use all MMC_MAX_RETRIES */
-	if (brq->sbc.error || brq->cmd.error)
+	if (brq->sbc.error || brq->cmd.error) {
+		pr_err("%s: Command errors fail fast, so use all MMC_MAX_RETRIES\n", req->rq_disk->disk_name);
 		return;
+	}
 
 	/* Reduce the remaining retries for data errors */
 	if (mqrq->retries < MMC_MAX_RETRIES - MMC_DATA_RETRIES) {
 		mqrq->retries = MMC_MAX_RETRIES - MMC_DATA_RETRIES;
+		pr_err("%s: Reduce the remaining retries for data errors\n", req->rq_disk->disk_name);
 		return;
 	}
 
@@ -1889,9 +1904,12 @@ static void mmc_blk_mq_rw_recovery(struct mmc_queue *mq, struct request *req, in
 	if (!mmc_large_sector(card) && rq_data_dir(req) == READ &&
 	    brq->data.blocks > 1) {
 		/* Read one sector at a time */
+		pr_err("%s:  Read one sector at a time\n", req->rq_disk->disk_name);
 		mmc_blk_read_single(mq, req);
 		return;
 	}
+	pr_err("%s: mmc_blk_mq_rw_recovery was done\n", req->rq_disk->disk_name);
+	mmc_mrq_log_output();
 }
 
 static inline bool mmc_blk_rq_error(struct mmc_blk_request *brq)
