@@ -213,7 +213,7 @@ static int xlnx_fbdev_create(struct drm_fb_helper *fb_helper,
 	format = xlnx_get_format(drm);
 	info = drm_format_info(format);
 	if (size->surface_bpp == info->cpp[0] * 8)
-		size->surface_depth = info->depth;
+		size->surface_depth = size->surface_bpp;
 
 	fbdev->fb = xlnx_fb_gem_fbdev_fb_create(drm, size, fbdev->align,
 						&obj->base, &xlnx_fb_funcs);

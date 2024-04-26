@@ -13,6 +13,7 @@
 #include <dt-bindings/pinctrl/pinctrl-zynqmp.h>
 #include <dt-bindings/media/xilinx-vip.h>
 #include <dt-bindings/clock/xlnx-zynqmp-clk.h>
+#include <dt-bindings/power/xlnx-zynqmp-power.h>
 
 /dts-v1/;
 /plugin/;
@@ -22,6 +23,32 @@
 	model = "VM-410HD revA";
 	#address-cells = <2>;
 	#size-cells = <2>;
+	reserved-memory {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
+		/* global autoconfigured region for contiguous allocations */
+		image_buf0: image_buf@10000000 {
+			compatible = "shared-dma-pool";
+			no-map;
+			reg = <0 0x10000000 0 0x10000000>; // 256MB
+		};
+		display_reserved: framebuffer@70000000 {
+			compatible = "shared-dma-pool";
+			no-map;
+			reg = <0 0x70000000 0 0x00800000>; // 8MB
+		};
+	};
+	framebuffer0: framebuffer@70000000 {
+                compatible = "simple-framebuffer";
+                reg = <0 0x70000000 0 (1920 * 1080  * 2)>;
+                width = <1920>;
+                height = <1080>;
+                stride = <(1920 * 2)>;
+                format = "r5g6b5";
+		clocks = <&misc_clk_0>;
+        };
 };
 
 &gpio {
@@ -40,6 +67,10 @@
     status = "disabled";
 };
 
+&rtc {
+	status = "disabled";
+};
+
 &i2c1 { /* I2C_SCK C23/C24 - MIO from SOM */
 	#address-cells = <1>;
 	#size-cells = <0>;
@@ -51,6 +82,11 @@
 
 	/* u43 - 0x2d - USB hub */
 	/* u27 - 0xe0 - STDP4320 DP/HDMI splitter */
+	/* u24 - 0x6f - MCP7940NT-I/MNY RTC */
+	rtc_i2c1: mcp7940x@6f {
+		compatible = "microchip,mcp7940x";
+		reg = <0x6f>;
+	};
 };
 
 &amba {
@@ -310,6 +346,16 @@
 &amba {
 	#address-cells = <2>;
 	#size-cells = <2>;
+	uio_sdirxss: uio_sdirxss@80040000 {
+		// UHDSDI Rx Subsystem
+		compatible = "vm410hd-uio";
+		reg = <0x0 0x80040000 0x0 0x10000>;
+	};
+	uio_vtc: uio_vtc@80050000 {
+		// Video Timing Controller
+		compatible = "vm410hd-uio";
+		reg = <0x0 0x80050000 0x0 0x10000>;
+	};
 	afi0: afi0 {
 		compatible = "xlnx,afi-fpga";
 		config-afi = < 0 0>, <1 0>, <2 0>, <3 0>, <4 0>, <5 0>, <6 0>, <7 0>, <8 0>, <9 0>, <10 2>, <11 2>, <12 0>, <13 0>, <14 0x200>, <15 0x000>;
@@ -339,13 +385,72 @@
 		xlnx,pixels-per-clock = <2>;
 		xlnx,s-axi-ctrl-addr-width = <0x7>;
 		xlnx,s-axi-ctrl-data-width = <0x20>;
-		xlnx,vid-formats = "rgb888", "bgr888", "xbgr8888", "xrgb8888", "xbgr2101010", "uyvy", "vuy888", "xvuy8888", "yuvx2101010", "yuyv", "xv20";
+		xlnx,vid-formats = "uyvy", "vuy888", "xvuy8888", "yuvx2101010", "yuyv", "nv16", "xv20", "xv15";
 		xlnx,video-width = <10>;
 	};
 	misc_clk_0: misc_clk_0 {
 		#clock-cells = <0>;
 		clock-frequency = <224997750>;
 		compatible = "fixed-clock";
+	};
+	misc_clk_1: misc_clk_1 {
+		#clock-cells = <0>;
+		clock-frequency = <148500000>;
+		compatible = "fixed-clock";
+	};
+	misc_clk_2: misc_clk_2 {
+		#clock-cells = <0>;
+		clock-frequency = <99999000>;
+		compatible = "fixed-clock";
+	};
+	vcu_0: vcu@80100000 {
+		#address-cells = <2>;
+		#clock-cells = <1>;
+		#size-cells = <2>;
+		clock-names = "pll_ref", "aclk", "vcu_core_enc", "vcu_mcu_enc", "vcu_core_dec", "vcu_mcu_dec";
+		clocks = <&misc_clk_3>, <&misc_clk_2>, <&vcu_0 0>, <&vcu_0 1>, <&vcu_0 2>, <&vcu_0 3>;
+		compatible = "xlnx,vcu-1.2", "xlnx,vcu";
+		interrupt-names = "vcu_host_interrupt";
+		interrupt-parent = <&gic>;
+		interrupts = <0 104 4>;
+		ranges ;
+		reg = <0x0 0x80140000 0x0 0x1000>, <0x0 0x80141000 0x0 0x1000>;
+		reg-names = "vcu_slcr", "logicore";
+		reset-gpios = <&gpio 108 0>;
+		encoder: al5e@80100000 {
+			compatible = "al,al5e-1.2", "al,al5e";
+			interrupt-parent = <&gic>;
+			interrupts = <0 104 4>;
+			reg = <0x0 0x80100000 0x0 0x10000>;
+		};
+		decoder: al5d@80120000 {
+			compatible = "al,al5d-1.2", "al,al5d";
+			interrupt-parent = <&gic>;
+			interrupts = <0 104 4>;
+			reg = <0x0 0x80120000 0x0 0x10000>;
+		};
+	};
+	misc_clk_3: misc_clk_3 {
+		#clock-cells = <0>;
+		clock-frequency = <49999500>;
+		compatible = "fixed-clock";
+	};
+	vcap_sdirxsdirxss_v_smpte_uhdsdi_rx_ss_0 {
+		compatible = "xlnx,video";
+		dma-names = "port0";
+		dmas = <&sdirxss_v_frmbuf_wr_0 0>;
+		memory-region = <&image_buf0>;
+		vcap_portssdirxss_v_smpte_uhdsdi_rx_ss_0: ports {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			vcap_portsdirxss_v_smpte_uhdsdi_rx_ss_0: port@0 {
+				direction = "input";
+				reg = <0>;
+				sdirxss_v_frmbuf_wr_0sdirxss_v_smpte_uhdsdi_rx_ss_0: endpoint {
+					remote-endpoint = <&sdirx_outsdirxss_v_smpte_uhdsdi_rx_ss_0>;
+				};
+			};
+		};
 	};
 	sdirxss_v_smpte_uhdsdi_rx_ss_0: v_smpte_uhdsdi_rx_ss@80040000 {
 		clock-names = "sdi_rx_clk", "video_out_clk", "s_axi_aclk";
@@ -355,7 +460,7 @@
 		interrupt-parent = <&gic>;
 		interrupts = <0 92 4>;
 		reg = <0x0 0x80040000 0x0 0x10000>;
-		xlnx,bpp = <0xa>;
+		xlnx,bpp = <10>;
 		xlnx,exdes-board = "ZCU106";
 		xlnx,exdes-config = "RX_Only";
 		xlnx,exdesboard-version = <0x2>;
@@ -382,334 +487,45 @@
 			};
 		};
 	};
-	misc_clk_1: misc_clk_1 {
-		#clock-cells = <0>;
-		clock-frequency = <297000000>;
-		compatible = "fixed-clock";
-	};
-	misc_clk_2: misc_clk_2 {
-		#clock-cells = <0>;
-		clock-frequency = <99999000>;
-		compatible = "fixed-clock";
-	};
-	sditxss_v_frmbuf_rd_0: v_frmbuf_rd@80010000 {
-		#dma-cells = <1>;
-		clock-names = "ap_clk";
-		clocks = <&misc_clk_0>;
-		compatible = "xlnx,v-frmbuf-rd-2.4", "xlnx,axi-frmbuf-rd-v2.2";
-		reg = <0x0 0x80010000 0x0 0x10000>;
-		reset-gpios = <&gpio 105 1>;
-		xlnx,dma-addr-width = <64>;
-		xlnx,dma-align = <16>;
-		xlnx,max-height = <2160>;
-		xlnx,max-width = <3840>;
-		xlnx,pixels-per-clock = <2>;
-		xlnx,s-axi-ctrl-addr-width = <0x7>;
-		xlnx,s-axi-ctrl-data-width = <0x20>;
-		xlnx,vid-formats = "rgb888", "xbgr8888", "xrgb8888", "bgr888", "xbgr2101010", "uyvy", "vuy888", "xvuy8888", "yuvx2101010", "yuyv", "nv12", "nv16", "xv20", "xv15", "y_u_v8";
-		xlnx,video-width = <10>;
-	};
-	sditxss_v_smpte_uhdsdi_tx_ss_0: v_smpte_uhdsdi_tx_ss@80020000 {
-		clock-names = "sdi_tx_clk", "video_in_clk", "s_axi_aclk";
-		clocks = <&misc_clk_1>, <&misc_clk_0>, <&misc_clk_2>;
-		compatible = "xlnx,v-smpte-uhdsdi-tx-ss-2.0", "xlnx,sdi-tx";
-		interrupt-names = "vtc_irq", "sdi_tx_irq";
-		interrupt-parent = <&gic>;
-		interrupts = <0 93 4 0 91 4>;
-		reg = <0x0 0x80020000 0x0 0x20000>;
-		xlnx,bpp = <0xa>;
-		xlnx,exdes-board = "ZCU106";
-		xlnx,exdes-config = "Pass-through_with_Picxo";
-		xlnx,include-adv-features = "false";
-		xlnx,include-axilite = "true";
-		xlnx,include-edh = "true";
-		xlnx,include-hdr10-embedd = "false";
-		xlnx,include-hfr = <0x0>;
-		xlnx,include-ycbcr-444 = <0x0>;
-		xlnx,is-versal = "false";
-		xlnx,line-rate = "3G_SDI";
-		xlnx,pixels-per-clock = <0x2>;
-		xlnx,tx-insert-c-str-st352 = "false";
-		xlnx,video-intf = "AXI4_Stream";
-		sditx_portssditxss_v_smpte_uhdsdi_tx_ss_0: ports {
-			#address-cells = <1>;
-			#size-cells = <0>;
-			encoder_sdi_portsditxss_v_smpte_uhdsdi_tx_ss_0: port@0 {
-				reg = <0>;
-				encodersditxss_v_smpte_uhdsdi_tx_ss_0: endpoint {
-					remote-endpoint = <&sditxss_v_frmbuf_rd_0sditxss_v_smpte_uhdsdi_tx_ss_0>;
-				};
-			};
-		};
-	};
-	vcu_0: vcu@80100000 {
-		#address-cells = <2>;
-		#clock-cells = <1>;
-		#size-cells = <2>;
-		clock-names = "pll_ref", "aclk", "vcu_core_enc", "vcu_mcu_enc", "vcu_core_dec", "vcu_mcu_dec";
-		clocks = <&misc_clk_3>, <&misc_clk_2>, <&vcu_0 0>, <&vcu_0 1>, <&vcu_0 2>, <&vcu_0 3>;
-		compatible = "xlnx,vcu-1.2", "xlnx,vcu";
-		interrupt-names = "vcu_host_interrupt";
-		interrupt-parent = <&gic>;
-		interrupts = <0 89 4>;
-		ranges ;
-		reg = <0x0 0x80140000 0x0 0x1000>, <0x0 0x80141000 0x0 0x1000>;
-		reg-names = "vcu_slcr", "logicore";
-		reset-gpios = <&gpio 108 0>;
-		encoder: al5e@80100000 {
-			compatible = "al,al5e-1.2", "al,al5e";
-			interrupt-parent = <&gic>;
-			interrupts = <0 89 4>;
-			reg = <0x0 0x80100000 0x0 0x10000>;
-		};
-		decoder: al5d@80120000 {
-			compatible = "al,al5d-1.2", "al,al5d";
-			interrupt-parent = <&gic>;
-			interrupts = <0 89 4>;
-			reg = <0x0 0x80120000 0x0 0x10000>;
-		};
-	};
-	misc_clk_3: misc_clk_3 {
-		#clock-cells = <0>;
-		clock-frequency = <49999500>;
-		compatible = "fixed-clock";
-	};
-	vcap_sdirxsdirxss_v_smpte_uhdsdi_rx_ss_0 {
-		compatible = "xlnx,video";
-		dma-names = "port0";
-		dmas = <&sdirxss_v_frmbuf_wr_0 0>;
-		vcap_portssdirxss_v_smpte_uhdsdi_rx_ss_0: ports {
-			#address-cells = <1>;
-			#size-cells = <0>;
-			vcap_portsdirxss_v_smpte_uhdsdi_rx_ss_0: port@0 {
-				direction = "input";
-				reg = <0>;
-				sdirxss_v_frmbuf_wr_0sdirxss_v_smpte_uhdsdi_rx_ss_0: endpoint {
-					remote-endpoint = <&sdirx_outsdirxss_v_smpte_uhdsdi_rx_ss_0>;
-				};
-			};
-		};
-	};
-	v_pl_dispsditxss_v_smpte_uhdsdi_tx_ss_0: drm-pl-disp-drvsditxss_v_smpte_uhdsdi_tx_ss_0 {
-		/* Fill the field xlnx,vformat based on user requirement */
-		compatible = "xlnx,pl-disp";
-		dma-names = "dma0";
-		dmas = <&sditxss_v_frmbuf_rd_0 0>;
-		xlnx,vformat = "YUYV";
-		pl_display_portsditxss_v_smpte_uhdsdi_tx_ss_0: port@0 {
-			reg = <0>;
-			sditxss_v_frmbuf_rd_0sditxss_v_smpte_uhdsdi_tx_ss_0: endpoint {
-				remote-endpoint = <&encodersditxss_v_smpte_uhdsdi_tx_ss_0>;
-			};
-		};
-	};
 };
 
-// &amba {
-// 	#address-cells = <2>;
-// 	#size-cells = <2>;
-// 	afi0: afi0 {
-// 		compatible = "xlnx,afi-fpga";
-// 		config-afi = < 0 0>, <1 0>, <2 0>, <3 0>, <4 0>, <5 0>, <6 0>, <7 0>, <8 0>, <9 0>, <10 0>, <11 0>, <12 0>, <13 0>, <14 0x200>, <15 0x000>;
-// 	};
-// 	clocking0: clocking0 {
-// 		#clock-cells = <0>;
-// 		assigned-clock-rates = <99999001>;
-// 		assigned-clocks = <&zynqmp_clk 71>;
-// 		clock-output-names = "fabric_clk";
-// 		clocks = <&zynqmp_clk 71>;
-// 		compatible = "xlnx,fclk";
-// 	};
-// 	sdi_rx_v_frmbuf_wr_0: v_frmbuf_wr@a0040000 {
-// 		#dma-cells = <1>;
-// 		clock-names = "ap_clk";
-// 		clocks = <&misc_clk_0>;
-// 		compatible = "xlnx,v-frmbuf-wr-2.4", "xlnx,axi-frmbuf-wr-v2.2";
-// 		interrupt-names = "interrupt";
-// 		interrupt-parent = <&gic>;
-// 		interrupts = <0 94 4>;
-// 		reg = <0x0 0xa0040000 0x0 0x10000>;
-// 		reset-gpios = <&gpio 104 1>;
-// 		xlnx,dma-addr-width = <32>;
-// 		xlnx,dma-align = <16>;
-// 		xlnx,max-height = <2160>;
-// 		xlnx,max-width = <3840>;
-// 		xlnx,pixels-per-clock = <2>;
-// 		xlnx,s-axi-ctrl-addr-width = <0x7>;
-// 		xlnx,s-axi-ctrl-data-width = <0x20>;
-// 		xlnx,vid-formats = "uyvy", "vuy888", "xvuy8888", "yuyv", "nv16", "y_u_v8";
-// 		xlnx,video-width = <8>;
-// 	};
-// 	misc_clk_0: misc_clk_0 {
-// 		#clock-cells = <0>;
-// 		clock-frequency = <249997500>;
-// 		compatible = "fixed-clock";
-// 	};
-// 	sdi_rx_v_smpte_uhdsdi_rx_ss_0: v_smpte_uhdsdi_rx_ss@a0030000 {
-// 		clock-names = "sdi_rx_clk", "video_out_clk", "s_axi_aclk";
-// 		clocks = <&misc_clk_1>, <&misc_clk_0>, <&misc_clk_2>;
-// 		compatible = "xlnx,v-smpte-uhdsdi-rx-ss-2.0", "xlnx,v-smpte-uhdsdi-rx-ss";
-// 		interrupt-names = "sdi_rx_irq";
-// 		interrupt-parent = <&gic>;
-// 		interrupts = <0 90 4>;
-// 		reg = <0x0 0xa0030000 0x0 0x10000>;
-// 		xlnx,bpp = <0xa>;
-// 		xlnx,exdes-board = "ZCU106";
-// 		xlnx,exdes-config = "RX_Only";
-// 		xlnx,exdesboard-version = <0x2>;
-// 		xlnx,include-adv-features = "false";
-// 		xlnx,include-axilite = "true";
-// 		xlnx,include-edh = "true";
-// 		xlnx,include-hdr10-extract = "false";
-// 		xlnx,include-hfr = "false";
-// 		xlnx,include-ycbcr-444 = "false";
-// 		xlnx,line-rate = "3G_SDI";
-// 		xlnx,pixels-per-clock = <0x2>;
-// 		xlnx,video-intf = "AXI4_Stream";
-// 		sdirx_portssdi_rx_v_smpte_uhdsdi_rx_ss_0: ports {
-// 			#address-cells = <1>;
-// 			#size-cells = <0>;
-// 			sdirx_portsdi_rx_v_smpte_uhdsdi_rx_ss_0: port@0 {
-// 				/* Fill the fields xlnx,video-format and xlnx,video-width based on user requirement */
-// 				reg = <0>;
-// 				xlnx,video-format = <0>;
-// 				xlnx,video-width = <10>;
-// 				sdirx_outsdi_rx_v_smpte_uhdsdi_rx_ss_0: endpoint {
-// 					remote-endpoint = <&sdi_rx_v_frmbuf_wr_0sdi_rx_v_smpte_uhdsdi_rx_ss_0>;
-// 				};
-// 			};
-// 		};
-// 	};
-// 	misc_clk_1: misc_clk_1 {
-// 		#clock-cells = <0>;
-// 		clock-frequency = <297000000>;
-// 		compatible = "fixed-clock";
-// 	};
-// 	misc_clk_2: misc_clk_2 {
-// 		#clock-cells = <0>;
-// 		clock-frequency = <99999000>;
-// 		compatible = "fixed-clock";
-// 	};
-// 	sdi_tx_v_smpte_uhdsdi_tx_ss_0: v_smpte_uhdsdi_tx_ss@a0000000 {
-// 		clock-names = "sdi_tx_clk", "video_in_clk", "s_axi_aclk";
-// 		clocks = <&misc_clk_1>, <&misc_clk_0>, <&misc_clk_2>;
-// 		compatible = "xlnx,v-smpte-uhdsdi-tx-ss-2.0", "xlnx,sdi-tx";
-// 		interrupt-names = "vtc_irq", "sdi_tx_irq";
-// 		interrupt-parent = <&gic>;
-// 		interrupts = <0 92 4 0 93 4>;
-// 		reg = <0x0 0xa0000000 0x0 0x20000>;
-// 		xlnx,bpp = <0xa>;
-// 		xlnx,exdes-board = "ZCU106";
-// 		xlnx,exdes-config = "Pass-through_with_Picxo";
-// 		xlnx,include-adv-features = "false";
-// 		xlnx,include-axilite = "true";
-// 		xlnx,include-edh = "false";
-// 		xlnx,include-hdr10-embedd = "false";
-// 		xlnx,include-hfr = <0x0>;
-// 		xlnx,include-ycbcr-444 = <0x0>;
-// 		xlnx,is-versal = "false";
-// 		xlnx,line-rate = "3G_SDI";
-// 		xlnx,pixels-per-clock = <0x2>;
-// 		xlnx,tx-insert-c-str-st352 = "false";
-// 		xlnx,video-intf = "AXI4_Stream";
-// 		sditx_portssdi_tx_v_smpte_uhdsdi_tx_ss_0: ports {
-// 			#address-cells = <1>;
-// 			#size-cells = <0>;
-// 			encoder_sdi_portsdi_tx_v_smpte_uhdsdi_tx_ss_0: port@0 {
-// 				reg = <0>;
-// 				sdi_tx_v_smpte_uhdsdi_tx_ss_0sdi_tx_v_tpg_0: endpoint {
-// 					remote-endpoint = <&tpg_outsdi_tx_v_tpg_0>;
-// 				};
-// 			};
-// 		};
-// 	};
-// 	sdi_tx_v_tc_0: v_tc@a0050000 {
-// 		clock-names = "clk", "s_axi_aclk";
-// 		clocks = <&misc_clk_0>, <&misc_clk_2>;
-// 		compatible = "xlnx,v-tc-6.2", "xlnx,v-tc-6.1";
-// 		reg = <0x0 0xa0050000 0x0 0x10000>;
-// 		xlnx,generator ;
-// 	};
-// 	sdi_tx_v_tpg_0: v_tpg@a0020000 {
-// 		clock-names = "ap_clk";
-// 		clocks = <&misc_clk_0>;
-// 		compatible = "xlnx,v-tpg-8.2", "xlnx,v-tpg-8.0";
-// 		interrupt-names = "interrupt";
-// 		interrupt-parent = <&gic>;
-// 		interrupts = <0 91 4>;
-// 		reg = <0x0 0xa0020000 0x0 0x10000>;
-// 		xlnx,max-height = <2160>;
-// 		xlnx,max-width = <4096>;
-// 		xlnx,ppc = <2>;
-// 		xlnx,s-axi-ctrl-addr-width = <8>;
-// 		xlnx,s-axi-ctrl-data-width = <32>;
-// 		xlnx,vtc = <&sdi_tx_v_tc_0>;
-// 		tpg_portssdi_tx_v_tpg_0: ports {
-// 			#address-cells = <1>;
-// 			#size-cells = <0>;
-// 			tpg_port1sdi_tx_v_tpg_0: port@1 {
-// 				/* Fill the field xlnx,video-format based on user requirement */
-// 				reg = <1>;
-// 				xlnx,video-format = <2>;
-// 				xlnx,video-width = <10>;
-// 				tpg_outsdi_tx_v_tpg_0: endpoint {
-// 					remote-endpoint = <&sdi_tx_v_smpte_uhdsdi_tx_ss_0sdi_tx_v_tpg_0>;
-// 				};
-// 			};
-// 			tpg_port0sdi_tx_v_tpg_0: port@0 {
-// 				/* Fill the field xlnx,video-format based on user requirement */
-// 				reg = <0>;
-// 				xlnx,video-format = <2>;
-// 				xlnx,video-width = <10>;
-// 			};
-// 		};
-// 	};
-// 	vcu_vcu_0: vcu@b0000000 {
-// 		#address-cells = <2>;
-// 		#clock-cells = <1>;
-// 		#size-cells = <2>;
-// 		clock-names = "pll_ref", "aclk", "vcu_core_enc", "vcu_mcu_enc", "vcu_core_dec", "vcu_mcu_dec";
-// 		clocks = <&misc_clk_3>, <&misc_clk_2>, <&vcu_vcu_0 0>, <&vcu_vcu_0 1>, <&vcu_vcu_0 2>, <&vcu_vcu_0 3>;
-// 		compatible = "xlnx,vcu-1.2", "xlnx,vcu";
-// 		interrupt-names = "vcu_host_interrupt";
-// 		interrupt-parent = <&gic>;
-// 		interrupts = <0 89 4>;
-// 		ranges ;
-// 		reg = <0x0 0xb0040000 0x0 0x1000>, <0x0 0xb0041000 0x0 0x1000>;
-// 		reg-names = "vcu_slcr", "logicore";
-// 		reset-gpios = <&gpio 107 0>;
-// 		encoder: al5e@b0000000 {
-// 			compatible = "al,al5e-1.2", "al,al5e";
-// 			interrupt-parent = <&gic>;
-// 			interrupts = <0 89 4>;
-// 			reg = <0x0 0xb0000000 0x0 0x10000>;
-// 		};
-// 		decoder: al5d@b0020000 {
-// 			compatible = "al,al5d-1.2", "al,al5d";
-// 			interrupt-parent = <&gic>;
-// 			interrupts = <0 89 4>;
-// 			reg = <0x0 0xb0020000 0x0 0x10000>;
-// 		};
-// 	};
-// 	misc_clk_3: misc_clk_3 {
-// 		#clock-cells = <0>;
-// 		clock-frequency = <49999500>;
-// 		compatible = "fixed-clock";
-// 	};
-// 	vcap_sdirxsdi_rx_v_smpte_uhdsdi_rx_ss_0 {
-// 		compatible = "xlnx,video";
-// 		dma-names = "port0";
-// 		dmas = <&sdi_rx_v_frmbuf_wr_0 0>;
-// 		vcap_portssdi_rx_v_smpte_uhdsdi_rx_ss_0: ports {
-// 			#address-cells = <1>;
-// 			#size-cells = <0>;
-// 			vcap_portsdi_rx_v_smpte_uhdsdi_rx_ss_0: port@0 {
-// 				direction = "input";
-// 				reg = <0>;
-// 				sdi_rx_v_frmbuf_wr_0sdi_rx_v_smpte_uhdsdi_rx_ss_0: endpoint {
-// 					remote-endpoint = <&sdirx_outsdi_rx_v_smpte_uhdsdi_rx_ss_0>;
-// 				};
-// 			};
-// 		};
-// 	};
-// };
+&qspi {
+	status = "okay";
+	#address-cells = <1>;
+	#size-cells = <0>;
+	spi_flash: flash@0 { /* MT25QU512A */
+		compatible = "mt25qu512a", "jedec,spi-nor"; /* 64MB */
+		reg = <0>;
+		spi-tx-bus-width = <4>;
+		spi-rx-bus-width = <4>;
+		spi-max-frequency = <40000000>; /* 40MHz */
+		partitions {
+			compatible = "fixed-partitions";
+			#address-cells = <1>;
+			#size-cells = <1>;
+			boot {
+				label = "BOOT.BIN";
+				reg = <0x0 0xd00000>; /* 13MB */
+			};
+			partition@0 {
+				reg = <0xd00000 0x20000>; /* 128KB */
+			};
+			partition@80000 {
+				reg = <0xd20000 0x20000>; /* 128KB */
+			};
+			partition@100000 {
+				reg = <0xd40000 0x20000>; /* 128KB */
+			};
+			partition@120000 {
+				reg = <0xd60000 0x20000>; /* 128KB */
+			};
+			partition@140000 {
+				reg = <0xd80000 0x20000>; /* 128KB */
+			};
+			partition@200000 {
+				reg = <0xda0000 0x20000>; /* 128KB */
+			};
+		};
+	};
+
+};

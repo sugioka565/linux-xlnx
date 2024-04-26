@@ -102,9 +102,7 @@
 
 #define XSDIRX_INTR_ALL_MASK	(XSDIRX_INTR_VIDLOCK_MASK |\
 				XSDIRX_INTR_VIDUNLOCK_MASK |\
-				XSDIRX_INTR_VSYNC_MASK |\
-				XSDIRX_INTR_OVERFLOW_MASK |\
-				XSDIRX_INTR_UNDERFLOW_MASK)
+				XSDIRX_INTR_VSYNC_MASK)
 
 #define XSDIRX_ST352_VALID_DS1_MASK	BIT(0)
 #define XSDIRX_ST352_VALID_DS3_MASK	BIT(1)
@@ -732,17 +730,25 @@ static inline void xsdirxss_write(struct xsdirxss_core *xsdirxss, u32 addr,
 {
 	iowrite32(value, xsdirxss->iomem + addr);
 }
-
+static spinlock_t sdirxss_lock;
 static inline void xsdirxss_clr(struct xsdirxss_core *xsdirxss, u32 addr,
 				u32 clr)
 {
+	unsigned long flags;
+
+	spin_lock_irqsave(&sdirxss_lock, flags);
 	xsdirxss_write(xsdirxss, addr, xsdirxss_read(xsdirxss, addr) & ~clr);
+	spin_unlock_irqrestore(&sdirxss_lock, flags);
 }
 
 static inline void xsdirxss_set(struct xsdirxss_core *xsdirxss, u32 addr,
 				u32 set)
 {
+	unsigned long flags;
+
+	spin_lock_irqsave(&sdirxss_lock, flags);
 	xsdirxss_write(xsdirxss, addr, xsdirxss_read(xsdirxss, addr) | set);
+	spin_unlock_irqrestore(&sdirxss_lock, flags);
 }
 
 static inline void xsdirx_core_disable(struct xsdirxss_core *core)
@@ -884,16 +890,19 @@ static inline void xsdirx_setvidlockwindow(struct xsdirxss_core *core, u32 val)
 
 static inline void xsdirx_disableintr(struct xsdirxss_core *core, u32 mask)
 {
+	dev_info(core->dev, "%s\n", __func__);
 	xsdirxss_clr(core, XSDIRX_IER_REG, mask);
 }
 
 static inline void xsdirx_enableintr(struct xsdirxss_core *core, u32 mask)
 {
+	dev_info(core->dev, "%s\n", __func__);
 	xsdirxss_set(core, XSDIRX_IER_REG, mask);
 }
 
 static void xsdirx_globalintr(struct xsdirxss_core *core, bool flag)
 {
+	dev_info(core->dev, "%s %d\n", __func__, flag);
 	if (flag)
 		xsdirxss_set(core, XSDIRX_GLBL_IER_REG,
 			     XSDIRX_GLBL_INTR_EN_MASK);
@@ -1120,17 +1129,16 @@ static int xsdirx_get_stream_properties(struct xsdirxss_state *state)
 		bpc = (payload & XST352_BYTE4_BIT_DEPTH_MASK) >>
 			XST352_BYTE4_BIT_DEPTH_OFFSET;
 	} else {
-		dev_dbg(core->dev, "No ST352 payload available : Mode = %d\n",
-			mode);
 		framerate = (val & XSDIRX_TS_DET_STAT_RATE_MASK) >>
 				XSDIRX_TS_DET_STAT_RATE_OFFSET;
 		tscan = (val & XSDIRX_TS_DET_STAT_SCAN_MASK) >>
 				XSDIRX_TS_DET_STAT_SCAN_OFFSET;
+		dev_info(core->dev, "No ST352 payload available : Mode = %d, framerate=%u, t_scan=%u\n", mode, framerate, tscan);
 	}
 
 	if ((bpc == XST352_BYTE4_BIT_DEPTH_10 && core->bpc != 10) ||
 	    (bpc == XST352_BYTE4_BIT_DEPTH_12 && core->bpc != 12)) {
-		dev_dbg(core->dev, "Bit depth not supported. bpc = %d core->bpc = %d\n",
+		dev_err(core->dev, "Bit depth not supported. bpc = %d core->bpc = %d\n",
 			bpc, core->bpc);
 		return -EINVAL;
 	}
@@ -1139,8 +1147,8 @@ static int xsdirx_get_stream_properties(struct xsdirxss_state *state)
 			XSDIRX_TS_DET_STAT_FAMILY_OFFSET;
 	state->ts_is_interlaced = tscan ? false : true;
 
-	dev_dbg(core->dev, "ts_is_interlaced = %d, family = %d\n",
-		state->ts_is_interlaced, family);
+	dev_info(core->dev, "ts_is_interlaced = %d, family = %d, mode=0x%x\n",
+		state->ts_is_interlaced, family, mode);
 
 	switch (mode) {
 	case XSDIRX_MODE_HD_MASK:
@@ -1245,7 +1253,6 @@ static int xsdirx_get_stream_properties(struct xsdirxss_state *state)
 
 		if (!valid) {
 			/* No payload obtained */
-			dev_warn(core->dev, "No ST352 valid payload available for 3G modes, source is not 3G compliant\n\r");
 			if (is_3GB) {
 				switch (framerate) {
 				case XSDIRX_TS_DET_STAT_RATE_96HZ:
@@ -1290,6 +1297,7 @@ static int xsdirx_get_stream_properties(struct xsdirxss_state *state)
 					break;
 				}
 			}
+			dev_warn(core->dev, "No ST352 valid payload available for 3G modes, source is not 3G compliant. width=%u height=%u field=%u\n", format->width, format->height, format->field);
 		} else {
 			dev_dbg(core->dev, "Got the payload\n");
 			switch (byte1) {
@@ -1518,12 +1526,12 @@ static int xsdirx_get_stream_properties(struct xsdirxss_state *state)
 	if (valid & XSDIRX_ST352_VALID_DS1_MASK)
 		state->prev_payload = payload;
 
-	dev_dbg(core->dev, "Stream width = %d height = %d Field = %d payload = 0x%08x ts = 0x%08x\n",
-		format->width, format->height, format->field, payload, val);
-	dev_dbg(core->dev, "frame rate numerator = %d denominator = %d\n",
-		state->frame_interval.numerator,
-		state->frame_interval.denominator);
-	dev_dbg(core->dev, "Stream code = 0x%x\n", format->code);
+	// dev_info(core->dev, "Stream width = %d height = %d Field = %d payload = 0x%08x ts = 0x%08x\n",
+	// 	format->width, format->height, format->field, payload, val);
+	// dev_info(core->dev, "frame rate numerator = %d denominator = %d\n",
+	// 	state->frame_interval.numerator,
+	// 	state->frame_interval.denominator);
+	// dev_info(core->dev, "Stream code = 0x%x\n", format->code);
 	return 0;
 }
 
@@ -1541,6 +1549,7 @@ static irqreturn_t xsdirxss_irq_handler(int irq, void *dev_id)
 	struct xsdirxss_state *state = (struct xsdirxss_state *)dev_id;
 	struct xsdirxss_core *core = &state->core;
 	u32 status;
+	u32 val1, val2, video_locked;
 
 	status = xsdirxss_read(core, XSDIRX_ISR_REG);
 	dev_dbg(core->dev, "interrupt status = 0x%08x\n", status);
@@ -1550,27 +1559,32 @@ static irqreturn_t xsdirxss_irq_handler(int irq, void *dev_id)
 
 	xsdirxss_write(core, XSDIRX_ISR_REG, status);
 
+	val1 = xsdirxss_read(core, XSDIRX_MODE_DET_STAT_REG);
+	val2 = xsdirxss_read(core, XSDIRX_TS_DET_STAT_REG);
+	video_locked = (val1 & XSDIRX_MODE_DET_STAT_MODE_LOCK_MASK) && (val2 & XSDIRX_TS_DET_STAT_LOCKED_MASK);
+	if (video_locked && !state->vidlocked) {
+		status |= XSDIRX_INTR_VIDLOCK_MASK;
+	} else if (!video_locked && state->vidlocked) {
+		status |= XSDIRX_INTR_VIDUNLOCK_MASK;
+	}
+
 	if (status & XSDIRX_INTR_VIDLOCK_MASK ||
 	    status & XSDIRX_INTR_VIDUNLOCK_MASK) {
-		u32 val1, val2;
 		bool gen_event = true;
-
-		dev_dbg(core->dev, "video lock/unlock interrupt\n");
 
 		xsdirx_streamflow_control(core, false);
 		state->streaming = false;
 
-		val1 = xsdirxss_read(core, XSDIRX_MODE_DET_STAT_REG);
-		val2 = xsdirxss_read(core, XSDIRX_TS_DET_STAT_REG);
 
-		if ((val1 & XSDIRX_MODE_DET_STAT_MODE_LOCK_MASK) &&
-		    (val2 & XSDIRX_TS_DET_STAT_LOCKED_MASK)) {
+		dev_info(core->dev, "video lock/unlock interrupt. MODE_DET=0x%x TS_DET=0x%x\n", val1, val2);
+
+		if (video_locked) {
 			u32 mask = XSDIRX_RST_CTRL_RST_CRC_ERRCNT_MASK |
 				   XSDIRX_RST_CTRL_RST_EDH_ERRCNT_MASK;
 
 			u32 prev_payload = state->prev_payload;
 
-			dev_dbg(core->dev, "video lock interrupt\n");
+			dev_info(core->dev, "video lock interrupt\n");
 
 			xsdirxss_set(core, XSDIRX_RST_CTRL_REG, mask);
 			xsdirxss_clr(core, XSDIRX_RST_CTRL_REG, mask);
@@ -1578,8 +1592,8 @@ static irqreturn_t xsdirxss_irq_handler(int irq, void *dev_id)
 			val1 = xsdirxss_read(core, XSDIRX_ST352_VALID_REG);
 			val2 = xsdirxss_read(core, XSDIRX_ST352_DS1_REG);
 
-			dev_dbg(core->dev, "valid st352 mask = 0x%08x\n", val1);
-			dev_dbg(core->dev, "st352 payload = 0x%08x\n", val2);
+			dev_info(core->dev, "valid st352 mask = 0x%08x\n", val1);
+			dev_info(core->dev, "st352 payload = 0x%08x\n", val2);
 
 			if (state->vidlocked) {
 				gen_event = false;
@@ -1598,7 +1612,7 @@ static irqreturn_t xsdirxss_irq_handler(int irq, void *dev_id)
 				 * correct way but a workaround
 				 */
 				if (val2 == prev_payload && state->s_stream) {
-					dev_dbg(core->dev, "Resuming as payload is same\n");
+					dev_info(core->dev, "Resuming as payload is same\n");
 					xsdirx_streamflow_control(core, true);
 					state->streaming = true;
 				}
@@ -1608,7 +1622,7 @@ static irqreturn_t xsdirxss_irq_handler(int irq, void *dev_id)
 			}
 
 		} else {
-			dev_dbg(core->dev, "video unlock interrupt\n");
+			dev_info(core->dev, "video unlock interrupt\n");
 			state->vidlocked = false;
 		}
 		if (gen_event) {
@@ -1986,28 +2000,28 @@ static int xsdirxss_s_stream(struct v4l2_subdev *sd, int enable)
 
 	if (enable) {
 		if (!xsdirxss->vidlocked) {
-			dev_dbg(core->dev, "Video is not locked\n");
+			dev_err(core->dev, "Video is not locked\n");
 			return -EINVAL;
 		}
 		if (xsdirxss->streaming) {
-			dev_dbg(core->dev, "Already streaming\n");
+			dev_err(core->dev, "Already streaming\n");
 			return -EINVAL;
 		}
 
 		xsdirx_streamflow_control(core, true);
 		xsdirxss->streaming = true;
 		xsdirxss->s_stream = true;
-		dev_dbg(core->dev, "Streaming started\n");
+		dev_info(core->dev, "Streaming started\n");
 	} else {
 		xsdirxss->s_stream = false;
 		if (!xsdirxss->streaming) {
-			dev_dbg(core->dev, "Stopped streaming already\n");
+			dev_err(core->dev, "Stopped streaming already\n");
 			return 0;
 		}
 
 		xsdirx_streamflow_control(core, false);
 		xsdirxss->streaming = false;
-		dev_dbg(core->dev, "Streaming stopped\n");
+		dev_info(core->dev, "Streaming stopped\n");
 	}
 
 	return 0;
@@ -2091,8 +2105,8 @@ static int xsdirxss_get_format(struct v4l2_subdev *sd,
 
 	fmt->format = *format;
 
-	dev_dbg(core->dev, "Stream width = %d height = %d Field = %d\n",
-		fmt->format.width, fmt->format.height, fmt->format.field);
+	// dev_info(core->dev, "Stream width = %d height = %d Field = %d\n",
+	// 	fmt->format.width, fmt->format.height, fmt->format.field);
 
 	return 0;
 }
@@ -2225,6 +2239,10 @@ static int xsdirxss_open(struct v4l2_subdev *sd,
 	struct v4l2_mbus_framefmt *format;
 	struct xsdirxss_state *xsdirxss = to_xsdirxssstate(sd);
 
+	if (!xsdirxss->vidlocked) {
+		dev_err(xsdirxss->core.dev, "Could not open video while unlocked\n");
+		return -EINVAL;
+	}
 	format = v4l2_subdev_get_try_format(sd, fh->state, 0);
 	*format = xsdirxss->default_format;
 

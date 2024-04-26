@@ -95,7 +95,7 @@
 #define	XSDI_TX_MUX_16STREAM_12G	4
 
 #define SDI_MAX_DATASTREAM		8
-#define PIXELS_PER_CLK			2
+#define PIXELS_PER_CLK			1
 #define XSDI_CH_SHIFT			29
 #define XST352_PROG_PIC			BIT(6)
 #define XST352_PROG_TRANS		BIT(7)
@@ -539,8 +539,8 @@ static void xlnx_sdi_set_mode(struct xlnx_sdi *sdi, u32 mode,
 		(is_frac << XSDI_TX_CTRL_M_SHIFT) |
 		((mux_ptrn & XSDI_TX_CTRL_MUX) << XSDI_TX_CTRL_MUX_SHIFT));
 
-	dev_dbg(sdi->dev, "sdi_420_out_val = %d\n sdi_444_out_val = %d\n\r",
-		sdi->sdi_420_out_val, sdi->sdi_444_out_val);
+	dev_info(sdi->dev, "%s: mode=%u di_420_out_val=%d sdi_444_out_val=%d\n",
+		__func__, mode, sdi->sdi_420_out_val, sdi->sdi_444_out_val);
 	if (sdi->sdi_420_out_val)
 		data |= XSDI_TX_CTRL_420_BIT;
 	else if (sdi->sdi_444_out_val)
@@ -923,9 +923,12 @@ static void xlnx_sdi_set_display_enable(struct xlnx_sdi *sdi)
 {
 	u32 data;
 
+dev_info(sdi->dev, "%s:%d\n", __func__, __LINE__);
 	data = xlnx_sdi_readl(sdi->base, XSDI_TX_RST_CTRL);
 	data |= XSDI_TX_CTRL_EN;
 	xlnx_sdi_writel(sdi->base, XSDI_TX_RST_CTRL, data);
+	xlnx_sdi_writel(sdi->base, XSDI_TX_IER_STAT, XSDI_IER_EN_MASK);
+	xlnx_sdi_writel(sdi->base, XSDI_TX_GLBL_IER, 1);
 }
 
 /**
@@ -976,7 +979,8 @@ static void xlnx_sdi_setup(struct xlnx_sdi *sdi)
 {
 	u32 reg;
 
-	dev_dbg(sdi->dev, "%s\n", __func__);
+	// dev_dbg(sdi->dev, "%s\n", __func__);
+dev_info(sdi->dev, "%s:%d\n", __func__, __LINE__);
 
 	reg = xlnx_sdi_readl(sdi->base, XSDI_TX_MDL_CTRL);
 	reg |= XSDI_TX_CTRL_INS_CRC | XSDI_TX_CTRL_INS_ST352 |
@@ -1026,6 +1030,9 @@ static void xlnx_sdi_encoder_atomic_mode_set(struct drm_encoder *encoder,
 	u32 sditx_blank, vtc_blank;
 	unsigned long clkrate;
 	int ret;
+	int mode_index = 0;
+
+dev_info(sdi->dev, "%s:%d\n", __func__, __LINE__);
 
 	/*
 	 * For the transceiver TX, for integer and fractional frame rate, the
@@ -1054,6 +1061,21 @@ static void xlnx_sdi_encoder_atomic_mode_set(struct drm_encoder *encoder,
 		if (sdi->gt_rst_gpio)
 			xlnx_sdi_gt_reset(sdi);
 	}
+	sdi->width_out_prop_val = adjusted_mode->hdisplay;
+	sdi->height_out_prop_val = adjusted_mode->vdisplay;
+	for (i = 0; i < ARRAY_SIZE(xlnx_sdi_modes); i++) {
+		if (xlnx_sdi_modes[i].mode.hdisplay ==
+		    adjusted_mode->hdisplay &&
+		    xlnx_sdi_modes[i].mode.vdisplay ==
+		    adjusted_mode->vdisplay &&
+		    adjusted_mode->flags == xlnx_sdi_modes[i].mode.flags &&
+		    drm_mode_vrefresh(&xlnx_sdi_modes[i].mode) ==
+		    drm_mode_vrefresh(adjusted_mode)) {
+			mode_index = i;
+			sdi->sdi_mod_prop_val = xlnx_sdi_modes[i].sdi_mod_val;
+			break;
+		}
+	}
 
 	/* Set timing parameters as per bridge output parameters */
 	xlnx_bridge_set_input(sdi->bridge, adjusted_mode->hdisplay,
@@ -1063,22 +1085,9 @@ static void xlnx_sdi_encoder_atomic_mode_set(struct drm_encoder *encoder,
 	xlnx_bridge_enable(sdi->bridge);
 
 	if (sdi->bridge) {
-		for (i = 0; i < ARRAY_SIZE(xlnx_sdi_modes); i++) {
-			if (xlnx_sdi_modes[i].mode.hdisplay ==
-			    sdi->width_out_prop_val &&
-			    xlnx_sdi_modes[i].mode.vdisplay ==
-			    sdi->height_out_prop_val &&
-			    adjusted_mode->flags == xlnx_sdi_modes[i].mode.flags &&
-			    drm_mode_vrefresh(&xlnx_sdi_modes[i].mode) ==
-			    drm_mode_vrefresh(adjusted_mode)) {
-				memcpy((char *)adjusted_mode +
-				       offsetof(struct drm_display_mode,
-						clock),
-				       &xlnx_sdi_modes[i].mode.clock,
-				       SDI_TIMING_PARAMS_SIZE);
-				break;
-			}
-		}
+		memcpy((char *)adjusted_mode + offsetof(struct drm_display_mode, clock),
+			&xlnx_sdi_modes[mode_index].mode.clock,
+			SDI_TIMING_PARAMS_SIZE);
 	}
 
 	/* If HFR video is streaming */
@@ -1090,7 +1099,7 @@ static void xlnx_sdi_encoder_atomic_mode_set(struct drm_encoder *encoder,
 
 	/* set st352 payloads */
 	payload = xlnx_sdi_calc_st352_payld(sdi, adjusted_mode);
-	dev_dbg(sdi->dev, "payload : %0x\n", payload);
+	dev_info(sdi->dev, "payload : %0x\n", payload);
 
 	for (i = 0; i < sdi->sdi_data_strm_prop_val / 2; i++) {
 		if (sdi->sdi_mod_prop_val == XSDI_MODE_3GB)
@@ -1165,7 +1174,7 @@ static void xlnx_sdi_commit(struct drm_encoder *encoder)
 	struct xlnx_sdi *sdi = encoder_to_sdi(encoder);
 	long ret;
 
-	dev_dbg(sdi->dev, "%s\n", __func__);
+dev_info(sdi->dev, "%s:%d\n", __func__, __LINE__);
 	xlnx_sdi_set_display_enable(sdi);
 	ret = wait_event_interruptible_timeout(sdi->wait_event,
 					       sdi->event_received,
@@ -1185,6 +1194,7 @@ static void xlnx_sdi_disable(struct drm_encoder *encoder)
 {
 	struct xlnx_sdi *sdi = encoder_to_sdi(encoder);
 
+dev_info(sdi->dev, "%s:%d\n", __func__, __LINE__);
 	if (sdi->bridge)
 		xlnx_bridge_disable(sdi->bridge);
 
@@ -1209,6 +1219,7 @@ static int xlnx_sdi_bind(struct device *dev, struct device *master,
 	struct drm_encoder *encoder = &sdi->encoder;
 	struct drm_device *drm_dev = data;
 	int ret;
+dev_info(sdi->dev, "%s:%d\n", __func__, __LINE__);
 
 	/*
 	 * TODO: The possible CRTCs are 1 now as per current implementation of
@@ -1234,6 +1245,7 @@ static void xlnx_sdi_unbind(struct device *dev, struct device *master,
 			    void *data)
 {
 	struct xlnx_sdi *sdi = dev_get_drvdata(dev);
+dev_info(sdi->dev, "%s:%d\n", __func__, __LINE__);
 
 	xlnx_sdi_set_display_disable(sdi);
 	xlnx_stc_disable(sdi->base);
@@ -1457,6 +1469,7 @@ static int xlnx_sdi_remove(struct platform_device *pdev)
 {
 	struct xlnx_sdi *sdi = platform_get_drvdata(pdev);
 
+	xlnx_sdi_writel(sdi->base, XSDI_TX_GLBL_IER, 0);
 	component_del(&pdev->dev, &xlnx_sdi_component_ops);
 	clk_disable_unprepare(sdi->vidin_clk);
 	clk_disable_unprepare(sdi->sditx_clk);

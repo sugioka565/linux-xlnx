@@ -593,7 +593,10 @@ static int xlnx_pl_disp_probe(struct platform_device *pdev)
 		return -ENOMEM;
 
 	dma_chan = of_dma_request_slave_channel(dev->of_node, "dma0");
-	if (IS_ERR_OR_NULL(dma_chan)) {
+        if (PTR_ERR(dma_chan) == -EPROBE_DEFER) {
+                dev_info(dev, "dma channel deffered\n");
+                return -EPROBE_DEFER;
+        } else if (IS_ERR_OR_NULL(dma_chan)) {
 		dev_err(dev, "failed to request dma channel\n");
 		return PTR_ERR(dma_chan);
 	}

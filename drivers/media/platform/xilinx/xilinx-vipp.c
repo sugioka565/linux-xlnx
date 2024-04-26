@@ -730,7 +730,8 @@ static int xvip_graph_init(struct xvip_composite_device *xdev)
 	/* Init the DMA channels. */
 	ret = xvip_graph_dma_init(xdev);
 	if (ret < 0) {
-		dev_err(xdev->dev, "DMA initialization failed\n");
+		if (ret != -EPROBE_DEFER)
+			dev_err(xdev->dev, "DMA initialization failed\n");
 		goto done;
 	}
 

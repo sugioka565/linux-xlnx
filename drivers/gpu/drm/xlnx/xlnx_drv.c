@@ -260,7 +260,7 @@ static int xlnx_bind(struct device *dev)
 
 	format = xlnx_crtc_helper_get_format(xlnx_drm->crtc);
 	info = drm_format_info(format);
-	if (info && info->depth && info->cpp[0]) {
+	if (info && info->cpp[0]) {
 		unsigned int align;
 
 		align = xlnx_crtc_helper_get_align(xlnx_drm->crtc);

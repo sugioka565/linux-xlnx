@@ -1107,6 +1107,16 @@ xvip_dma_s_selection(struct file *file, void *fh, struct v4l2_selection *sel)
 
 	return 0;
 }
+static int xvip_dma_g_pixelaspect(struct file *file, void *priv,
+			      int type, struct v4l2_fract *f)
+{
+	if (type != V4L2_BUF_TYPE_VIDEO_CAPTURE)
+		return -EINVAL;
+	f->denominator = 1;
+	f->numerator = 1;
+
+	return 0;
+}
 
 static const struct v4l2_ioctl_ops xvip_dma_ioctl_ops = {
 	.vidioc_querycap		= xvip_dma_querycap,
@@ -1134,9 +1144,10 @@ static const struct v4l2_ioctl_ops xvip_dma_ioctl_ops = {
 	.vidioc_expbuf			= vb2_ioctl_expbuf,
 	.vidioc_streamon		= vb2_ioctl_streamon,
 	.vidioc_streamoff		= vb2_ioctl_streamoff,
-	.vidioc_enum_input	= &xvip_dma_enum_input,
-	.vidioc_g_input		= &xvip_dma_get_input,
-	.vidioc_s_input		= &xvip_dma_set_input,
+	.vidioc_enum_input		= &xvip_dma_enum_input,
+	.vidioc_g_input			= &xvip_dma_get_input,
+	.vidioc_s_input			= &xvip_dma_set_input,
+	.vidioc_g_pixelaspect		= xvip_dma_g_pixelaspect,
 };
 
 /* -----------------------------------------------------------------------------
@@ -1365,12 +1376,6 @@ int xvip_dma_init(struct xvip_composite_device *xdev, struct xvip_dma *dma,
 		goto error;
 	}
 
-	ret = v4l2_ctrl_handler_setup(&dma->ctrl_handler);
-	if (ret < 0) {
-		dev_err(dma->xdev->dev, "failed to set controls\n");
-		goto error;
-	}
-
 	/* ... and the video node... */
 	dma->video.fops = &xvip_dma_fops;
 	dma->video.v4l2_dev = &xdev->v4l2_dev;
@@ -1453,6 +1458,12 @@ int xvip_dma_init(struct xvip_composite_device *xdev, struct xvip_dma *dma,
 	}
 
 	dma->align = 1 << dma->dma->device->copy_align;
+
+	ret = v4l2_ctrl_handler_setup(&dma->ctrl_handler);
+	if (ret < 0) {
+		dev_err(dma->xdev->dev, "failed to set controls\n");
+		goto error;
+	}
 
 	ret = video_register_device(&dma->video, VFL_TYPE_VIDEO, -1);
 	if (ret < 0) {
