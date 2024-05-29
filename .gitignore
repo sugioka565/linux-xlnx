@@ -168,3 +168,12 @@ sphinx_*/
 
 # Rust analyzer configuration
 /rust-project.json
+
+modules.order
+modules.builtin.modinfo
+modules.builtin
+kernel/config_data.h
+scripts/conmakehash
+scripts/kconfig/qconf.moc
+scripts/pnmtologo
+scripts/sortextable
