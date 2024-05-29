@@ -655,10 +655,9 @@
 	status = "okay";
 };
 &usb0 {
-	phy_type = "ulpi";
 	status = "okay";
-	usb-reset = <&gpio0 107 0>;
 	dr_mode = "host";
+	usb-reset = <&gpio0 107 0>;
 	usb-phy = <&usb_phy0>;
 };
 &clkc {
