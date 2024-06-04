@@ -548,6 +548,10 @@
 			compatible = "fixed-clock";
 		};
 	};
+	sdhci1_pwrseq: emmc-pwrseq {
+		compatible = "mmc-pwrseq-emmc";
+		reset-gpios = <&gpio0 109 GPIO_ACTIVE_HIGH>;
+	};
 };
 
 &gem0 {
@@ -642,8 +646,9 @@
 	xlnx,has-power = <0x0>;
 	xlnx,has-wp = <0x0>;
 	no-1-8-v;
-	reset-gpios = <&gpio0 108 GPIO_ACTIVE_HIGH>;
-	cap-mmc-hw-reset;
+	// reset-gpios = <&gpio0 108 GPIO_ACTIVE_HIGH>;
+	// cap-mmc-hw-reset;
+	mmc-pwrseq = <&sdhci1_pwrseq>;
 };
 &uart0 {
 	cts-override ;

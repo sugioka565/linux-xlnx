@@ -34,20 +34,25 @@ static void mmc_pwrseq_emmc_reset(struct mmc_host *host)
 	struct mmc_pwrseq_emmc *pwrseq =  to_pwrseq_emmc(host->pwrseq);
 
 	gpiod_set_value_cansleep(pwrseq->reset_gpio, 1);
-	udelay(1);
+	usleep_range(2000, 3000);
 	gpiod_set_value_cansleep(pwrseq->reset_gpio, 0);
-	udelay(200);
+	msleep(10);
+	printk("emmc powerseq reset\n");
 }
 
 static int mmc_pwrseq_emmc_reset_nb(struct notifier_block *this,
 				    unsigned long mode, void *cmd)
 {
+	int i;
 	struct mmc_pwrseq_emmc *pwrseq = container_of(this,
 					struct mmc_pwrseq_emmc, reset_nb);
 	gpiod_set_value(pwrseq->reset_gpio, 1);
-	udelay(1);
+	usleep_range(2000, 3000);
 	gpiod_set_value(pwrseq->reset_gpio, 0);
-	udelay(200);
+	for (i = 0; i < 10; i++) {
+		usleep_range(1000, 2000);
+	}
+	printk("emmc powerseq reset nb\n");
 
 	return NOTIFY_DONE;
 }
