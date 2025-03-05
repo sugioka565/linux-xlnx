@@ -669,3 +669,7 @@
 	fclk-enable = <0x3>;
 	ps-clk-frequency = <33333333>;
 };
+&watchdog0 {
+	timeout-sec = <120>;
+	reset-on-timeout;
+};

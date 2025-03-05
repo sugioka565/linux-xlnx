@@ -220,7 +220,7 @@ int pwm_backlight_brightness_default(struct device *dev,
 		data->levels[i] = (unsigned int)retval;
 	}
 
-	data->dft_brightness = data->max_brightness / 2;
+	data->dft_brightness = data->max_brightness * 3 / 4;
 	data->max_brightness--;
 
 	return 0;

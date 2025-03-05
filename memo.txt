@@ -1,0 +1,12 @@
+mmc が busy 状態のままになったとき、回復できない理由
+　　mmc_blk_mq_rw_recovery() の中で呼ばれる mmc_wait_ongoing_tfr_cmd() のタイムアウトがない
+
+mmc_blk_mq_rw_recovery
+__mmc_send_status
+mmc_wait_for_req
+__mmc_start_req
+mmc_wait_ongoing_tfr_cmd
+wait_for_completion
+wait_for_common(x, MAX_SCHEDULE_TIMEOUT, TASK_UNINTERRUPTIBLE); // no timeout
+__wait_for_common
+do_wait_for_common

@@ -1767,6 +1767,7 @@ static void scsi_eh_offline_sdevs(struct list_head *work_q,
 		mutex_unlock(&sdev->state_mutex);
 
 		scsi_eh_finish_cmd(scmd, done_q);
+		panic("Device offlined - not ready after error recovery\n");
 	}
 	return;
 }
