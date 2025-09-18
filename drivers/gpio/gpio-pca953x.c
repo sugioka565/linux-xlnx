@@ -16,6 +16,7 @@
 #include <linux/init.h>
 #include <linux/interrupt.h>
 #include <linux/module.h>
+#include <linux/of.h>
 #include <linux/of_platform.h>
 #include <linux/platform_data/pca953x.h>
 #include <linux/regmap.h>
@@ -1075,8 +1076,21 @@ static int pca953x_probe(struct i2c_client *client,
 		chip->names = pdata->names;
 	} else {
 		struct gpio_desc *reset_gpio;
+		u32 gpio_base;
 
-		chip->gpio_start = -1;
+		/* Try to get GPIO base from device tree alias */
+		chip->gpio_start = of_alias_get_id(client->dev.of_node, "gpio");
+		
+		/* If alias not found, try gpio-base property */
+		if (chip->gpio_start < 0) {
+			if (!of_property_read_u32(client->dev.of_node, "gpio-base", &gpio_base))
+				chip->gpio_start = gpio_base;
+		}
+		
+		/* If still not found, use dynamic assignment */
+		if (chip->gpio_start < 0)
+			chip->gpio_start = -1;
+			
 		irq_base = 0;
 
 		/*
