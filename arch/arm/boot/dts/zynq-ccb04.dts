@@ -13,21 +13,18 @@
 
 	aliases {
 		ethernet0 = &gem0;
+		ethernet1 = &gem1;
 		gpio512 = &gpio0;
-		gpio1024 = &tca6416;
-		i2c0 = &i2c0;
-		i2c1 = &i2c1;
+		i2c0 = &axi_iic_0;
+		i2c1 = &axi_iic_1;
+		i2c2 = &axi_iic_2;
+		i2c3 = &axi_iic_3;
 		serial0 = &uart0;
 		serial1 = &uart1;
 		serial2 = &axi_rs485_0;
 		serial3 = &axi_rs485_1;
-		serial4 = &axi_uart16550_printer;
-		serial5 = &axi_uart16550_FeliCa;
-		serial6 = &axi_uart16550_MagCard;
-		serial7 = &axi_uart16550_UPS;
-		serial8 = &axi_uart16550_JVM2;
-		serial9 = &axi_uart16550_JVM1;
-		serial10 = &axi_uart16550_MDB;
+		serial4 = &axi_rs485_2;
+		serial5 = &axi_rs485_3;
 		spi0 = &qspi;
 		flash0 = &flash0;
 	};
@@ -40,170 +37,12 @@
 
 	memory@0 {
 		device_type = "memory";
-		reg = <0x0 0x20000000>;
-	};
-	reserved-memory {
-		#address-cells = <1>;
-		#size-cells = <1>;
-		ranges;
-		display_reserved: framebuffer@3f800000 {
-			no-map;
-			reg = <0x3f800000 0x00800000>;
-		};
+		reg = <0x00100000 0x3ff00000>;
 	};
 
 	chosen {
 		bootargs = "console=ttyPS0,115200 root=/dev/mmcblk1p1 rw rootwait";
 		stdout-path = "serial0:115200n8";
-	};
-	video_clk_0: video_clk_0 {
-		#clock-cells = <0>;
-		clock-frequency = <100000000>;
-		compatible = "fixed-clock";
-	};
-	framebuffer_0: framebuffer@3f800000 {
-		compatible = "simple-framebuffer";
-		reg = <0x3f800000 (1024 * 600  * 4)>;
-		width = <1024>;
-		height = <600>;
-		stride = <(1024 * 4)>;
-		format = "x8r8g8b8";
-		clocks = <&video_clk_0>;
-	};
-
-	backlight_lcd: backlight_lcd {
-		compatible = "pwm-backlight";
-		pwms = <&pwm_backlight 0 5000000>; /* PWM Period = 5msec (200Hz) */
-	};
-	buzzer: buzzer {
-		compatible = "pwm-beeper";
-		pwms = <&pwm_buzz 0 2500000>;
-		beeper-hz = <4000>;
-	};
-	matrix-keypad {
-		status = "okay";
-		compatible = "gpio-matrix-keypad";
-		debounce-delay-ms = <5>;
-		col-scan-delay-us = <1>;
-		linux,no-autorepeat;
-		drive-inactive-cols;
-		col-gpios = <
-			&gpio0 86 0
-			&gpio0 87 0
-			&gpio0 88 0
-			&gpio0 89 0
-			>;
-		row-gpios = <
-			&gpio0 54 0
-			&gpio0 55 0
-			&gpio0 56 0
-			&gpio0 57 0
-			&gpio0 58 0
-			>;
-		interrupt-parent = <&gpio0>;
-		interrupts = <
-			54 IRQ_TYPE_EDGE_FALLING
-			55 IRQ_TYPE_EDGE_FALLING
-			56 IRQ_TYPE_EDGE_FALLING
-			57 IRQ_TYPE_EDGE_FALLING
-			58 IRQ_TYPE_EDGE_FALLING
-			>;
-		linux,keymap = <
-			MATRIX_KEY(0, 0, KEY_1) /* 1 */
-			MATRIX_KEY(0, 1, KEY_2) /* 2 */
-			MATRIX_KEY(0, 2, KEY_3) /* 3 */
-			MATRIX_KEY(0, 3, KEY_F) /* 未使用 */
-			MATRIX_KEY(1, 0, KEY_4) /* 4 */
-			MATRIX_KEY(1, 1, KEY_5) /* 5 */
-			MATRIX_KEY(1, 2, KEY_A) /* 精算 */
-			MATRIX_KEY(1, 3, KEY_G) /* 未使用 */
-			MATRIX_KEY(2, 0, KEY_B) /* 取消 */
-			MATRIX_KEY(2, 1, KEY_6) /* 6 */
-			MATRIX_KEY(2, 2, KEY_7) /* 7 */
-			MATRIX_KEY(2, 3, KEY_H) /* 未使用 */
-			MATRIX_KEY(3, 0, KEY_8) /* 8 */
-			MATRIX_KEY(3, 1, KEY_9) /* 9 */
-			MATRIX_KEY(3, 2, KEY_0) /* 0 */
-			MATRIX_KEY(3, 3, KEY_I) /* 未使用 */
-			MATRIX_KEY(4, 0, KEY_C) /* 領収証 */
-			MATRIX_KEY(4, 1, KEY_D) /* 駐車証明 */
-			MATRIX_KEY(4, 2, KEY_E) /* 未使用 */
-			MATRIX_KEY(4, 3, KEY_J) /* 未使用 */
-			>;
-	};
-	gpio-keys {
-		compatible = "gpio-keys";
-		status = "disabled";
-		din0 {
-			label = "din0";
-			gpios = <&gpio0 62 GPIO_ACTIVE_HIGH>;
-			linux,code = <KEY_K>;
-			wakeup-source;
-			wakeup-event-action = <EV_ACT_ANY>;
-		};
-		din1 {
-			label = "din1";
-			gpios = <&gpio0 63 GPIO_ACTIVE_HIGH>;
-			linux,code = <KEY_L>;
-			wakeup-source;
-			wakeup-event-action = <EV_ACT_ANY>;
-		};
-		din2 {
-			label = "din2";
-			gpios = <&gpio0 64 GPIO_ACTIVE_HIGH>;
-			linux,code = <KEY_M>;
-			wakeup-source;
-			wakeup-event-action = <EV_ACT_ANY>;
-		};
-		din3 {
-			label = "din3";
-			gpios = <&gpio0 65 GPIO_ACTIVE_HIGH>;
-			linux,code = <KEY_N>;
-			wakeup-source;
-			wakeup-event-action = <EV_ACT_ANY>;
-		};
-		din4 {
-			label = "din4";
-			gpios = <&gpio0 66 GPIO_ACTIVE_HIGH>;
-			linux,code = <KEY_O>;
-			wakeup-source;
-			wakeup-event-action = <EV_ACT_ANY>;
-		};
-		din5 {
-			label = "din5";
-			gpios = <&gpio0 67 GPIO_ACTIVE_HIGH>;
-			linux,code = <KEY_P>;
-			wakeup-source;
-			wakeup-event-action = <EV_ACT_ANY>;
-		};
-		din6 {
-			label = "din6";
-			gpios = <&gpio0 68 GPIO_ACTIVE_HIGH>;
-			linux,code = <KEY_Q>;
-			wakeup-source;
-			wakeup-event-action = <EV_ACT_ANY>;
-		};
-		din7 {
-			label = "din7";
-			gpios = <&gpio0 69 GPIO_ACTIVE_HIGH>;
-			linux,code = <KEY_R>;
-			wakeup-source;
-			wakeup-event-action = <EV_ACT_ANY>;
-		};
-		// human {
-		// 	label = "human";
-		// 	gpios = <&gpio0 70 GPIO_ACTIVE_HIGH>;
-		// 	linux,code = <KEY_S>;
-		// 	wakeup-source;
-		// 	wakeup-event-action = <EV_ACT_ANY>;
-		// };
-		// door {
-		// 	label = "door";
-		// 	gpios = <&gpio0 71 GPIO_ACTIVE_HIGH>;
-		// 	linux,code = <KEY_T>;
-		// 	wakeup-source;
-		// 	wakeup-event-action = <EV_ACT_ANY>;
-		// };
 	};
 	leds {
 		compatible = "gpio-leds";
@@ -222,332 +61,201 @@
 			linux,default-trigger = "mmc0";
 			// function = LED_FUNCTION_DISK;
 		};
-		led3 { gpios = <&gpio0  97 GPIO_ACTIVE_HIGH>; };
+		led3 {
+            gpios = <&gpio0  97 GPIO_ACTIVE_HIGH>;
+			linux,default-trigger = "mmc1";
+			// function = LED_FUNCTION_DISK;
+        };
 		led4 { gpios = <&gpio0  98 GPIO_ACTIVE_HIGH>; };
 		led5 { gpios = <&gpio0  99 GPIO_ACTIVE_HIGH>; };
 		led6 { gpios = <&gpio0 100 GPIO_ACTIVE_HIGH>; };
 		led7 { gpios = <&gpio0 101 GPIO_ACTIVE_HIGH>; };
-		kbled0 { gpios = <&gpio0 102 GPIO_ACTIVE_HIGH>; };
-		kbled1 { gpios = <&gpio0 103 GPIO_ACTIVE_HIGH>; };
-		kbled2 { gpios = <&gpio0 104 GPIO_ACTIVE_HIGH>; };
-		kbled3 { gpios = <&gpio0 105 GPIO_ACTIVE_HIGH>; };
-		kbled4 { gpios = <&gpio0 106 GPIO_ACTIVE_HIGH>; };
-		extled0 { gpios = <&tca6416 0 GPIO_ACTIVE_LOW>; };
-		extled1 { gpios = <&tca6416 1 GPIO_ACTIVE_LOW>; };
-		extled2 { gpios = <&tca6416 2 GPIO_ACTIVE_LOW>; };
-		extled3 { gpios = <&tca6416 3 GPIO_ACTIVE_LOW>; };
-		extled4 { gpios = <&tca6416 4 GPIO_ACTIVE_LOW>; };
-		extled5 { gpios = <&tca6416 5 GPIO_ACTIVE_LOW>; };
-		extled6 { gpios = <&tca6416 6 GPIO_ACTIVE_LOW>; };
-		extled7 { gpios = <&tca6416 7 GPIO_ACTIVE_LOW>; };
-		relay0 { gpios = <&tca6416 8 GPIO_ACTIVE_LOW>; };
-		relay1 { gpios = <&tca6416 9 GPIO_ACTIVE_LOW>; };
-		relay2 { gpios = <&tca6416 10 GPIO_ACTIVE_LOW>; };
-		relay3 { gpios = <&tca6416 11 GPIO_ACTIVE_LOW>; };
-		relay4 { gpios = <&tca6416 12 GPIO_ACTIVE_LOW>; };
-		relay5 { gpios = <&tca6416 13 GPIO_ACTIVE_LOW>; };
-		relay6 { gpios = <&tca6416 14 GPIO_ACTIVE_LOW>; };
-		relay7 { gpios = <&tca6416 15 GPIO_ACTIVE_LOW>; };
-	};
-	usb_phy0: usb_phy@0 {
-		compatible = "ulpi-phy";
-		#phy-cells = <0>;
-		reg = <0xe0002000 0x1000>;
-		view-port = <0x0170>;
-		drv-vbus;
-	};
-	audio_mclk: audio_mclk {
-		#clock-cells = <0>;
-		clock-frequency = <18432000>;
-		compatible = "fixed-clock";
 	};
 	amba_pl: amba_pl {
 		#address-cells = <1>;
 		#size-cells = <1>;
 		compatible = "simple-bus";
 		ranges ;
-		axi_rs485_0: rs485_0 {
-			clock-frequency = <100000000>;
-			clock-names = "s_axi_aclk";
-			clocks = <&clkc 15>;
-			compatible = "ns16550a";
-			device_type = "serial";
-			reg-offset = <0x1000>;
-			reg-shift = <2>;
-			interrupt-names = "ip2intc_irpt";
-			interrupt-parent = <&intc>;
-			interrupts = <0 54 4>;
-			reg = <0x43c90000 0x10000>;
-		};
-		axi_rs485_1: rs485_1 {
-			clock-frequency = <100000000>;
-			clock-names = "s_axi_aclk";
-			clocks = <&clkc 15>;
-			compatible = "ns16550a";
-			device_type = "serial";
-			reg-offset = <0x1000>;
-			reg-shift = <2>;
-			interrupt-names = "ip2intc_irpt";
-			interrupt-parent = <&intc>;
-			interrupts = <0 55 4>;
-			reg = <0x43ca0000 0x10000>;
-		};
-		pwm_backlight: timer@42800000 {
-			clock-frequency = <100000000>;
-			clock-names = "s_axi_aclk";
-			clocks = <&clkc 15>;
-			compatible = "xlnx,xps-timer-1.00.a";
-			reg = <0x42800000 0x10000>;
-			#pwm-cells = <2>;
-			xlnx,count-width = <0x20>;
-			xlnx,gen0-assert = <0x1>;
-			xlnx,gen1-assert = <0x1>;
-			xlnx,one-timer-only = <0x0>;
-			xlnx,trig0-assert = <0x1>;
-			xlnx,trig1-assert = <0x1>;
-		};
-		pwm_buzz: timer@42810000 {
-			clock-frequency = <100000000>;
-			clock-names = "s_axi_aclk";
-			clocks = <&clkc 15>;
-			compatible = "xlnx,xps-timer-1.00.a";
-			reg = <0x42810000 0x10000>;
-			#pwm-cells = <2>;
-			xlnx,count-width = <0x20>;
-			xlnx,gen0-assert = <0x1>;
-			xlnx,gen1-assert = <0x1>;
-			xlnx,one-timer-only = <0x0>;
-			xlnx,trig0-assert = <0x1>;
-			xlnx,trig1-assert = <0x1>;
-		};
-		axi_uart16550_FeliCa: uart_FeliCa {
-			clock-frequency = <100000000>;
-			clock-names = "s_axi_aclk";
-			clocks = <&clkc 15>;
-			compatible = "xlnx,xps-uart16550-2.00.a", "ns16550a";
-			current-speed = <115200>;
-			device_type = "serial";
-			interrupt-names = "ip2intc_irpt";
-			interrupt-parent = <&intc>;
-			interrupts = <0 34 4>;
-			port-number = <1>;
-			reg = <0x43c40000 0x10000>;
-			reg-offset = <0x1000>;
-			reg-shift = <2>;
-			xlnx,external-xin-clk-hz = <0x17d7840>;
-			xlnx,external-xin-clk-hz-d = <0x19>;
-			xlnx,has-external-rclk = <0x0>;
-			xlnx,has-external-xin = <0x0>;
-			xlnx,is-a-16550 = <0x1>;
-			xlnx,s-axi-aclk-freq-hz-d = "100.0";
-			xlnx,sim-device = "VERSAL_AI_CORE_ES1";
-			xlnx,use-modem-ports = <0x1>;
-			xlnx,use-user-ports = <0x1>;
-		};
-		axi_uart16550_JVM1: uart_JVM1 {
-			clock-frequency = <100000000>;
-			clock-names = "s_axi_aclk";
-			clocks = <&clkc 15>;
-			compatible = "xlnx,xps-uart16550-2.00.a", "ns16550a";
-			current-speed = <115200>;
-			device_type = "serial";
-			interrupt-names = "ip2intc_irpt";
-			interrupt-parent = <&intc>;
-			interrupts = <0 36 4>;
-			port-number = <2>;
-			reg = <0x43c60000 0x10000>;
-			reg-offset = <0x1000>;
-			reg-shift = <2>;
-			xlnx,external-xin-clk-hz = <0x17d7840>;
-			xlnx,external-xin-clk-hz-d = <0x19>;
-			xlnx,has-external-rclk = <0x0>;
-			xlnx,has-external-xin = <0x0>;
-			xlnx,is-a-16550 = <0x1>;
-			xlnx,s-axi-aclk-freq-hz-d = "100.0";
-			xlnx,sim-device = "VERSAL_AI_CORE_ES1";
-			xlnx,use-modem-ports = <0x1>;
-			xlnx,use-user-ports = <0x1>;
-		};
-		axi_uart16550_JVM2: uart_JVM2 {
-			clock-frequency = <100000000>;
-			clock-names = "s_axi_aclk";
-			clocks = <&clkc 15>;
-			compatible = "xlnx,xps-uart16550-2.00.a", "ns16550a";
-			current-speed = <115200>;
-			device_type = "serial";
-			interrupt-names = "ip2intc_irpt";
-			interrupt-parent = <&intc>;
-			interrupts = <0 52 4>;
-			port-number = <3>;
-			reg = <0x43c70000 0x10000>;
-			reg-offset = <0x1000>;
-			reg-shift = <2>;
-			xlnx,external-xin-clk-hz = <0x17d7840>;
-			xlnx,external-xin-clk-hz-d = <0x19>;
-			xlnx,has-external-rclk = <0x0>;
-			xlnx,has-external-xin = <0x0>;
-			xlnx,is-a-16550 = <0x1>;
-			xlnx,s-axi-aclk-freq-hz-d = "100.0";
-			xlnx,sim-device = "VERSAL_AI_CORE_ES1";
-			xlnx,use-modem-ports = <0x1>;
-			xlnx,use-user-ports = <0x1>;
-		};
-		axi_uart16550_MDB: uart_MDB {
-			clock-frequency = <100000000>;
-			clock-names = "s_axi_aclk";
-			clocks = <&clkc 15>;
-			compatible = "xlnx,xps-uart16550-2.00.a", "ns16550a";
-			current-speed = <115200>;
-			device_type = "serial";
-			interrupt-names = "ip2intc_irpt";
-			interrupt-parent = <&intc>;
-			interrupts = <0 53 4>;
-			port-number = <4>;
-			reg = <0x43c80000 0x10000>;
-			reg-offset = <0x1000>;
-			reg-shift = <2>;
-			xlnx,external-xin-clk-hz = <0x17d7840>;
-			xlnx,external-xin-clk-hz-d = <0x19>;
-			xlnx,has-external-rclk = <0x0>;
-			xlnx,has-external-xin = <0x0>;
-			xlnx,is-a-16550 = <0x1>;
-			xlnx,s-axi-aclk-freq-hz-d = "100.0";
-			xlnx,sim-device = "VERSAL_AI_CORE_ES1";
-			xlnx,use-modem-ports = <0x1>;
-			xlnx,use-user-ports = <0x1>;
-		};
-		axi_uart16550_MagCard: uart_MagCard {
-			clock-frequency = <100000000>;
-			clock-names = "s_axi_aclk";
-			clocks = <&clkc 15>;
-			compatible = "xlnx,xps-uart16550-2.00.a", "ns16550a";
-			current-speed = <115200>;
-			device_type = "serial";
-			interrupt-names = "ip2intc_irpt";
-			interrupt-parent = <&intc>;
-			interrupts = <0 35 4>;
-			port-number = <5>;
-			reg = <0x43c50000 0x10000>;
-			reg-offset = <0x1000>;
-			reg-shift = <2>;
-			xlnx,external-xin-clk-hz = <0x17d7840>;
-			xlnx,external-xin-clk-hz-d = <0x19>;
-			xlnx,has-external-rclk = <0x0>;
-			xlnx,has-external-xin = <0x0>;
-			xlnx,is-a-16550 = <0x1>;
-			xlnx,s-axi-aclk-freq-hz-d = "100.0";
-			xlnx,sim-device = "VERSAL_AI_CORE_ES1";
-			xlnx,use-modem-ports = <0x1>;
-			xlnx,use-user-ports = <0x1>;
-		};
-		axi_uart16550_UPS: uart_UPS {
-			clock-frequency = <100000000>;
-			clock-names = "s_axi_aclk";
-			clocks = <&clkc 15>;
-			compatible = "xlnx,xps-uart16550-2.00.a", "ns16550a";
-			current-speed = <115200>;
-			device_type = "serial";
-			interrupt-names = "ip2intc_irpt";
-			interrupt-parent = <&intc>;
-			interrupts = <0 33 4>;
-			port-number = <6>;
-			reg = <0x43c30000 0x10000>;
-			reg-offset = <0x1000>;
-			reg-shift = <2>;
-			xlnx,external-xin-clk-hz = <0x17d7840>;
-			xlnx,external-xin-clk-hz-d = <0x19>;
-			xlnx,has-external-rclk = <0x0>;
-			xlnx,has-external-xin = <0x0>;
-			xlnx,is-a-16550 = <0x1>;
-			xlnx,s-axi-aclk-freq-hz-d = "100.0";
-			xlnx,sim-device = "VERSAL_AI_CORE_ES1";
-			xlnx,use-modem-ports = <0x1>;
-			xlnx,use-user-ports = <0x1>;
-		};
-		axi_uart16550_printer: uart_Printer {
-			clock-frequency = <100000000>;
-			clock-names = "s_axi_aclk";
-			clocks = <&clkc 15>;
-			compatible = "xlnx,xps-uart16550-2.00.a", "ns16550a";
-			current-speed = <115200>;
-			device_type = "serial";
-			interrupt-names = "ip2intc_irpt";
-			interrupt-parent = <&intc>;
-			interrupts = <0 32 4>;
-			port-number = <7>;
-			reg = <0x43c20000 0x10000>;
-			reg-offset = <0x1000>;
-			reg-shift = <2>;
-			xlnx,external-xin-clk-hz = <0x17d7840>;
-			xlnx,external-xin-clk-hz-d = <0x19>;
-			xlnx,has-external-rclk = <0x0>;
-			xlnx,has-external-xin = <0x0>;
-			xlnx,is-a-16550 = <0x1>;
-			xlnx,s-axi-aclk-freq-hz-d = "100.0";
-			xlnx,sim-device = "VERSAL_AI_CORE_ES1";
-			xlnx,use-modem-ports = <0x1>;
-			xlnx,use-user-ports = <0x1>;
-		};
-		audio_formatter_0: audio_formatter@43c10000 {
-			clock-names = "s_axi_lite_aclk", "m_axis_mm2s_aclk", "aud_mclk";
-			clocks = <&clkc 15>, <&clkc 15>, <&audio_mclk>;
-			compatible = "xlnx,audio-formatter-1.0", "xlnx,audio-formatter-1.0";
-			interrupt-names = "irq_mm2s";
-			interrupt-parent = <&intc>;
-			interrupts = <0 30 4>;
-			reg = <0x43c10000 0x10000>;
-			xlnx,include-mm2s = <0x1>;
-			xlnx,include-s2mm = <0x0>;
-			xlnx,max-num-channels-mm2s = <0x2>;
-			xlnx,max-num-channels-s2mm = <0x2>;
-			xlnx,mm2s-addr-width = <0x20>;
-			xlnx,mm2s-async-clock = <0x1>;
-			xlnx,mm2s-dataformat = <0x3>;
-			xlnx,packing-mode-mm2s = <0x0>;
-			xlnx,packing-mode-s2mm = <0x0>;
-			xlnx,s2mm-addr-width = <0x40>;
-			xlnx,s2mm-async-clock = <0x1>;
-			xlnx,s2mm-dataformat = <0x1>;
-			xlnx,tx = <&i2s_transmitter_0>;
-		};
-		i2s_transmitter_0: i2s_transmitter@43c00000 {
-			aud_mclk = <18432000>;
-			clock-names = "s_axi_ctrl_aclk", "aud_mclk", "s_axis_aud_aclk";
-			clocks = <&clkc 15>, <&audio_mclk>, <&clkc 15>;
-			compatible = "xlnx,i2s-transmitter-1.0", "xlnx,i2s-transmitter-1.0";
-			interrupt-names = "irq";
-			interrupt-parent = <&intc>;
-			interrupts = <0 31 4>;
-			reg = <0x43c00000 0x10000>;
-			xlnx,depth = <0x80>;
-			xlnx,dwidth = <0x10>;
-			xlnx,num-channels = <0x1>;
-			xlnx,snd-pcm = <&audio_formatter_0>;
-		};
-		v_frmbuf_rd_0: v_frmbuf_rd@40000000 {
-			#dma-cells = <1>;
-			status = "disabled";
-			clock-names = "ap_clk";
-			clocks = <&misc_clk_0>;
-			compatible = "xlnx,v-frmbuf-rd-2.1", "xlnx,axi-frmbuf-rd-v2.1";
-			interrupt-names = "interrupt";
-			interrupt-parent = <&intc>;
-			interrupts = <0 29 4>;
-			reg = <0x40000000 0x10000>;
-			xlnx,dma-addr-width = <32>;
-			xlnx,dma-align = <8>;
-			xlnx,max-height = <1080>;
-			xlnx,max-width = <1920>;
-			xlnx,pixels-per-clock = <1>;
-			xlnx,s-axi-ctrl-addr-width = <0x7>;
-			xlnx,s-axi-ctrl-data-width = <0x20>;
-			xlnx,vid-formats = "rgb888", "xbgr8888", "xrgb8888", "bgr888";
-			xlnx,video-width = <8>;
-		};
-		misc_clk_0: misc_clk_0 {
+		clocking1: clocking1 {
+			compatible = "xlnx,fclk";
+			assigned-clocks = <&clkc 16>;
+			assigned-clock-rates = <25000000>;
 			#clock-cells = <0>;
-			clock-frequency = <74250000>;
-			compatible = "fixed-clock";
+			clock-output-names = "fabric_clk";
+			clocks = <&clkc 16>;
+		};
+		clocking0: clocking0 {
+			compatible = "xlnx,fclk";
+			assigned-clocks = <&clkc 15>;
+			assigned-clock-rates = <100000000>;
+			#clock-cells = <0>;
+			clock-output-names = "fabric_clk";
+			clocks = <&clkc 15>;
+		};
+		axi_iic_0: i2c@41600000 {
+			interrupts = < 0 35 4 >;
+			xlnx,iic-freq-khz = <100>;
+			compatible = "xlnx,axi-iic-2.1" , "xlnx,xps-iic-2.00.a";
+			xlnx,scl-inertial-delay = <0>;
+			interrupt-parent = <&intc>;
+			xlnx,ip-name = "axi_iic";
+			xlnx,disable-setup-violation-check = <0>;
+			reg = <0x41600000 0x10000>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			clocks = <&clkc 15>;
+			xlnx,gpo-width = <1>;
+			xlnx,edk-iptype = "PERIPHERAL";
+			xlnx,static-timing-reg-width = <0>;
+			xlnx,sda-level = <1>;
+			status = "okay";
+			clock-names = "s_axi_aclk";
+			xlnx,ten-bit-adr = <0>;
+			xlnx,default-value = <0x0>;
+			interrupt-names = "iic2intc_irpt";
+			xlnx,iic-board-interface = "Custom";
+			xlnx,timing-reg-width = <32>;
+			xlnx,iic-freq = <100000>;
+			xlnx,smbus-pmbus-host = <0>;
+			xlnx,name = "axi_iic_0";
+			xlnx,axi-aclk-freq-mhz = <100>;
+			xlnx,sda-inertial-delay = <0>;
+		};
+		axi_iic_1: i2c@41610000 {
+			interrupts = < 0 36 4 >;
+			xlnx,iic-freq-khz = <100>;
+			compatible = "xlnx,axi-iic-2.1" , "xlnx,xps-iic-2.00.a";
+			xlnx,scl-inertial-delay = <0>;
+			interrupt-parent = <&intc>;
+			xlnx,ip-name = "axi_iic";
+			xlnx,disable-setup-violation-check = <0>;
+			reg = <0x41610000 0x10000>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			clocks = <&clkc 15>;
+			xlnx,gpo-width = <1>;
+			xlnx,edk-iptype = "PERIPHERAL";
+			xlnx,static-timing-reg-width = <0>;
+			xlnx,sda-level = <1>;
+			status = "okay";
+			clock-names = "s_axi_aclk";
+			xlnx,ten-bit-adr = <0>;
+			xlnx,default-value = <0x0>;
+			interrupt-names = "iic2intc_irpt";
+			xlnx,iic-board-interface = "Custom";
+			xlnx,timing-reg-width = <32>;
+			xlnx,iic-freq = <100000>;
+			xlnx,smbus-pmbus-host = <0>;
+			xlnx,name = "axi_iic_1";
+			xlnx,axi-aclk-freq-mhz = <100>;
+			xlnx,sda-inertial-delay = <0>;
+		};
+		axi_iic_2: i2c@41620000 {
+			interrupts = < 0 52 4 >;
+			xlnx,iic-freq-khz = <100>;
+			compatible = "xlnx,axi-iic-2.1" , "xlnx,xps-iic-2.00.a";
+			xlnx,scl-inertial-delay = <0>;
+			interrupt-parent = <&intc>;
+			xlnx,ip-name = "axi_iic";
+			xlnx,disable-setup-violation-check = <0>;
+			reg = <0x41620000 0x10000>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			clocks = <&clkc 15>;
+			xlnx,gpo-width = <1>;
+			xlnx,edk-iptype = "PERIPHERAL";
+			xlnx,static-timing-reg-width = <0>;
+			xlnx,sda-level = <1>;
+			status = "okay";
+			clock-names = "s_axi_aclk";
+			xlnx,ten-bit-adr = <0>;
+			xlnx,default-value = <0x0>;
+			interrupt-names = "iic2intc_irpt";
+			xlnx,iic-board-interface = "Custom";
+			xlnx,timing-reg-width = <32>;
+			xlnx,iic-freq = <100000>;
+			xlnx,smbus-pmbus-host = <0>;
+			xlnx,name = "axi_iic_1";
+			xlnx,axi-aclk-freq-mhz = <100>;
+			xlnx,sda-inertial-delay = <0>;
+		};
+		axi_iic_3: i2c@41630000 {
+			interrupts = < 0 53 4 >;
+			xlnx,iic-freq-khz = <100>;
+			compatible = "xlnx,axi-iic-2.1" , "xlnx,xps-iic-2.00.a";
+			xlnx,scl-inertial-delay = <0>;
+			interrupt-parent = <&intc>;
+			xlnx,ip-name = "axi_iic";
+			xlnx,disable-setup-violation-check = <0>;
+			reg = <0x41630000 0x10000>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			clocks = <&clkc 15>;
+			xlnx,gpo-width = <1>;
+			xlnx,edk-iptype = "PERIPHERAL";
+			xlnx,static-timing-reg-width = <0>;
+			xlnx,sda-level = <1>;
+			status = "okay";
+			clock-names = "s_axi_aclk";
+			xlnx,ten-bit-adr = <0>;
+			xlnx,default-value = <0x0>;
+			interrupt-names = "iic2intc_irpt";
+			xlnx,iic-board-interface = "Custom";
+			xlnx,timing-reg-width = <32>;
+			xlnx,iic-freq = <100000>;
+			xlnx,smbus-pmbus-host = <0>;
+			xlnx,name = "axi_iic_1";
+			xlnx,axi-aclk-freq-mhz = <100>;
+			xlnx,sda-inertial-delay = <0>;
+		};
+		axi_rs485_0: axi_rs485@43c00000 {
+			clock-frequency = <100000000>;
+			clock-names = "s_axi_aclk";
+			clocks = <&clkc 15>;
+			compatible = "ns16550a";
+			device_type = "serial";
+			reg-offset = <0x1000>;
+			reg-shift = <2>;
+			interrupt-names = "ip2intc_irpt";
+			interrupt-parent = <&intc>;
+			interrupts = < 0 31 4 >;
+			reg = <0x43c00000 0x10000>;
+		};
+		axi_rs485_1: axi_rs485@43c10000 {
+			clock-frequency = <100000000>;
+			clock-names = "s_axi_aclk";
+			clocks = <&clkc 15>;
+			compatible = "ns16550a";
+			device_type = "serial";
+			reg-offset = <0x1000>;
+			reg-shift = <2>;
+			interrupt-parent = <&intc>;
+			interrupts = < 0 32 4 >;
+			reg = <0x43c10000 0x10000>;
+		};
+		axi_rs485_2: axi_rs485@43c20000 {
+			clock-frequency = <100000000>;
+			clock-names = "s_axi_aclk";
+			clocks = <&clkc 15>;
+			compatible = "ns16550a";
+			device_type = "serial";
+			reg-offset = <0x1000>;
+			reg-shift = <2>;
+			interrupt-parent = <&intc>;
+			interrupts = < 0 33 4 >;
+			reg = <0x43c20000 0x10000>;
+		};
+		axi_rs485_3: axi_rs485@43c30000 {
+			clock-frequency = <100000000>;
+			clock-names = "s_axi_aclk";
+			clocks = <&clkc 15>;
+			compatible = "ns16550a";
+			device_type = "serial";
+			reg-offset = <0x1000>;
+			reg-shift = <2>;
+			interrupt-parent = <&intc>;
+			interrupts = < 0 34 4 >;
+			reg = <0x43c30000 0x10000>;
 		};
 	};
 	sdhci1_pwrseq: emmc-pwrseq {
@@ -559,43 +267,39 @@
 &gem0 {
 	status = "okay";
 	phy-mode = "rgmii-id";
-	phy-handle = <&ethernet_phy>;
-	xlnx,ptp-enet-clock = <0x69f6bcb>;
-
-	ethernet_phy: ethernet-phy@0 {
-		reg = <0>;
-		device_type = "ethernet-phy";
-		interrupt-names = "interrupt";
-		interrupt-parent = <&intc>;
-		interrupts = <0 56 4>;
-		// rxc-skew-psec = <1500>;
-		// txc-skew-psec = <1500>;
-	};
+	phy-handle = <&ethernet_phy1>;
+    pinctrl-names = "default";
+    pinctrl-0 = <&pinctrl_gem0_rgmii>;
+    mdio0: mdio {
+        #address-cells = <1>;
+        #size-cells = <0>;
+        ethernet_phy1: ethernet-phy@1 {
+            reg = <1>;
+		    device_type = "ethernet-phy";
+        };
+        ethernet_phy2: ethernet-phy@2 {
+            reg = <2>;
+            device_type = "ethernet-phy";
+        };
+    };
+};
+&gem1 {
+	status = "okay";
+	phy-mode = "rgmii-id";
+	phy-handle = <&ethernet_phy2>;
+    pinctrl-names = "default";
+    pinctrl-0 = <&pinctrl_gem1_rgmii>;
 };
 &gpio0 {
 	emio-gpio-width = <64>;
 	gpio-mask-high = <0x0>;
 	gpio-mask-low = <0x5600>;
-	/* Custom GPIO base number (optional) */
-	// gpio-base = <0>;
 };
-&i2c0 {
-	clock-frequency = <400000>;
-	status = "okay";
+&axi_iic_0 {
 	rtc: mcp7940x@6f {
 		compatible = "microchip,mcp7940x";
 		reg = <0x6f>;
 	};
-	tca6416: gpio@20 {
-		compatible = "ti,tca6416";
-		reg = <0x20>;
-		gpio-controller;
-		#gpio-cells = <2>;
-	};
-};
-&i2c1 {
-	clock-frequency = <400000>;
-	status = "okay";
 };
 &intc {
 	num_cpus = <2>;
@@ -650,24 +354,20 @@
 	xlnx,has-power = <0x0>;
 	xlnx,has-wp = <0x0>;
 	no-1-8-v;
-	// reset-gpios = <&gpio0 108 GPIO_ACTIVE_HIGH>;
-	// cap-mmc-hw-reset;
 	mmc-pwrseq = <&sdhci1_pwrseq>;
 };
 &uart0 {
 	cts-override ;
 	device_type = "serial";
 	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart0_default>;
 };
 &uart1 {
 	device_type = "serial";
 	status = "okay";
-};
-&usb0 {
-	status = "okay";
-	dr_mode = "host";
-	usb-reset = <&gpio0 107 0>;
-	usb-phy = <&usb_phy0>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart1_default>;
 };
 &clkc {
 	fclk-enable = <0x3>;
@@ -676,4 +376,106 @@
 &watchdog0 {
 	timeout-sec = <120>;
 	reset-on-timeout;
+};
+&pinctrl0 {
+    /* GEM0 RGMII: MIO16–27 */
+    pinctrl_gem0_rgmii: gem0-rgmii-default {
+        mux {
+            groups = "ethernet0_0_grp";
+            function = "ethernet0";
+        };
+        conf {
+            groups = "ethernet0_0_grp";
+			slew-rate = <1>; /* Fast slew rate */
+			power-source = <1>; /* LVCMOS18 */
+        };
+		conf-rx {
+			pins = "MIO22", "MIO23", "MIO24", "MIO25", "MIO26", "MIO27";
+			bias-high-impedance;
+			low-power-disable; /* enable receiver */
+		};
+		conf-tx {
+			pins = "MIO16", "MIO17", "MIO18", "MIO19", "MIO20", "MIO21";
+			bias-disable;
+			low-power-enable; /* disable receiver */
+		};
+        /* MDIO(MIO52/53) を GEM0 側の MDIO0 に割当て */
+        mux-mdio {
+            groups = "mdio0_0_grp";
+            function = "mdio0";
+        };
+        conf-mdio {
+            groups = "mdio0_0_grp";
+			slew-rate = <0>; /* Slow slew rate */
+			power-source = <1>; /* LVCMOS18 */
+			bias-disable;
+        };
+    };
+
+    /* GEM1 RGMII: MIO28–39 */
+    pinctrl_gem1_rgmii: gem1-rgmii-default {
+        mux {
+            groups = "ethernet1_0_grp";
+            function = "ethernet1";
+        };
+        conf {
+            groups = "ethernet1_0_grp";
+			slew-rate = <1>; /* Fast slew rate */
+			power-source = <1>; /* LVCMOS18 */
+        };
+		conf-rx {
+			pins = "MIO34", "MIO35", "MIO36", "MIO37", "MIO38", "MIO39";
+			bias-high-impedance;
+			low-power-disable; /* enable receiver */
+		};
+		conf-tx {
+			pins = "MIO28", "MIO29", "MIO30", "MIO31", "MIO32", "MIO33";
+			bias-disable;
+			low-power-enable; /* disable receiver */
+		};
+    };
+	pinctrl_uart0_default: uart0-default {
+		mux {
+			groups = "uart0_1_grp";
+			function = "uart0";
+		};
+
+		conf {
+			groups = "uart0_1_grp";
+			slew-rate = <0>; /* Slow slew rate */
+			power-source = <3>; /* LVCMOS33 */
+		};
+
+		conf-rx {
+			pins = "MIO14";
+			bias-high-impedance;
+		};
+
+		conf-tx {
+			pins = "MIO15";
+			bias-disable;
+		};
+	};
+	pinctrl_uart1_default: uart1-default {
+		mux {
+			groups = "uart1_1_grp";
+			function = "uart1";
+		};
+
+		conf {
+			groups = "uart1_1_grp";
+			slew-rate = <0>; /* Slow slew rate */
+			power-source = <3>; /* LVCMOS33 */
+		};
+
+		conf-rx {
+			pins = "MIO13";
+			bias-high-impedance;
+		};
+
+		conf-tx {
+			pins = "MIO12";
+			bias-disable;
+		};
+	};
 };
