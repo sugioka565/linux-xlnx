@@ -93,9 +93,11 @@
 			clocks = <&clkc 15>;
 		};
 		axi_iic_0: i2c@41600000 {
+            single-master;
+            clock-frequency = <100000>;
 			interrupts = < 0 35 4 >;
 			xlnx,iic-freq-khz = <100>;
-			compatible = "xlnx,axi-iic-2.1" , "xlnx,xps-iic-2.00.a";
+			compatible = "xlnx,axi-iic-2.1";
 			xlnx,scl-inertial-delay = <0>;
 			interrupt-parent = <&intc>;
 			xlnx,ip-name = "axi_iic";
@@ -122,9 +124,11 @@
 			xlnx,sda-inertial-delay = <0>;
 		};
 		axi_iic_1: i2c@41610000 {
+            single-master;
+            clock-frequency = <100000>;
 			interrupts = < 0 36 4 >;
 			xlnx,iic-freq-khz = <100>;
-			compatible = "xlnx,axi-iic-2.1" , "xlnx,xps-iic-2.00.a";
+			compatible = "xlnx,axi-iic-2.1";
 			xlnx,scl-inertial-delay = <0>;
 			interrupt-parent = <&intc>;
 			xlnx,ip-name = "axi_iic";
@@ -151,9 +155,11 @@
 			xlnx,sda-inertial-delay = <0>;
 		};
 		axi_iic_2: i2c@41620000 {
+            single-master;
+            clock-frequency = <100000>;
 			interrupts = < 0 52 4 >;
 			xlnx,iic-freq-khz = <100>;
-			compatible = "xlnx,axi-iic-2.1" , "xlnx,xps-iic-2.00.a";
+			compatible = "xlnx,axi-iic-2.1";
 			xlnx,scl-inertial-delay = <0>;
 			interrupt-parent = <&intc>;
 			xlnx,ip-name = "axi_iic";
@@ -180,9 +186,11 @@
 			xlnx,sda-inertial-delay = <0>;
 		};
 		axi_iic_3: i2c@41630000 {
+            single-master;
+            clock-frequency = <100000>;
 			interrupts = < 0 53 4 >;
 			xlnx,iic-freq-khz = <100>;
-			compatible = "xlnx,axi-iic-2.1" , "xlnx,xps-iic-2.00.a";
+			compatible = "xlnx,axi-iic-2.1";
 			xlnx,scl-inertial-delay = <0>;
 			interrupt-parent = <&intc>;
 			xlnx,ip-name = "axi_iic";
@@ -299,6 +307,15 @@
 	rtc: mcp7940x@6f {
 		compatible = "microchip,mcp7940x";
 		reg = <0x6f>;
+	};
+};
+&axi_iic_2 {
+	lp5860t_0: lp5860t@40 {
+		compatible = "ti,lp5860t";
+		reg = <0x40>;
+        /* SW線とCS線の数を設定 */
+        ti,num-sw = <7>;   /* SW0-SW6 */
+        ti,num-cs = <16>;   /* CS0-CS15 */
 	};
 };
 &intc {

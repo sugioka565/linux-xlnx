@@ -115,14 +115,15 @@ struct timing_regs {
 	unsigned int tsusto;
 	unsigned int thdsta;
 	unsigned int tsudat;
+	unsigned int thddat;
 	unsigned int tbuf;
 };
 
 /* Reg values in ns derived from I2C spec and AXI I2C PG for different frequencies */
 static const struct timing_regs timing_reg_values[] = {
-	{ 5700, 5000, 4300, 550, 5000 }, /* Reg values for 100KHz */
-	{ 900, 900, 900, 400, 1600 },    /* Reg values for 400KHz */
-	{ 380, 380, 380, 170, 620 },     /* Reg values for 1MHz   */
+	{ 5700, 5000, 4300, 550, 550,5000 }, /* Reg values for 100KHz */
+	{ 900, 900, 900, 400, 400,1600 },    /* Reg values for 400KHz */
+	{ 380, 380, 380, 170, 170, 620 },     /* Reg values for 1MHz   */
 };
 
 #define XIIC_MSB_OFFSET 0
@@ -437,7 +438,8 @@ static int xiic_setclk(struct xiic_i2c *i2c)
 	xiic_setreg32(i2c, XIIC_TBUF_REG_OFFSET, reg_val - 1);
 
 	/* THDDAT */
-	xiic_setreg32(i2c, XIIC_THDDAT_REG_OFFSET, 1);
+	reg_val = (timing_reg_values[index].thddat * clk_in_mhz) / 1000;
+	xiic_setreg32(i2c, XIIC_THDDAT_REG_OFFSET, reg_val - 1);
 
 	return 0;
 }
