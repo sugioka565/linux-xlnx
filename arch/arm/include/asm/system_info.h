@@ -21,6 +21,7 @@ extern unsigned int system_rev;
 extern const char *system_serial;
 extern unsigned int system_serial_low;
 extern unsigned int system_serial_high;
+extern const char *machine_name;
 extern unsigned int mem_fclk_21285;
 
 extern int __pure cpu_architecture(void);

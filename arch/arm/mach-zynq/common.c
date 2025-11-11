@@ -107,12 +107,30 @@ static void __init zynq_init_machine(void)
 	struct soc_device_attribute *soc_dev_attr;
 	struct soc_device *soc_dev;
 	struct device *parent = NULL;
+	struct device_node *root;
+	const char *model;
+	u32 dt_revision;
 
 	soc_dev_attr = kzalloc(sizeof(*soc_dev_attr), GFP_KERNEL);
 	if (!soc_dev_attr)
 		goto out;
 
-	system_rev = zynq_get_revision();
+	/* Read system-revision from device tree if available */
+	root = of_find_node_by_path("/");
+	if (root) {
+		if (!of_property_read_u32(root, "system-revision", &dt_revision))
+			system_rev = dt_revision;
+		else
+			system_rev = zynq_get_revision();
+
+		/* Override machine name with model property if available */
+		if (!of_property_read_string(root, "model", &model))
+			machine_name = model;
+
+		of_node_put(root);
+	} else {
+		system_rev = zynq_get_revision();
+	}
 
 	soc_dev_attr->family = kasprintf(GFP_KERNEL, "Xilinx Zynq");
 	soc_dev_attr->revision = kasprintf(GFP_KERNEL, "0x%x", system_rev);
