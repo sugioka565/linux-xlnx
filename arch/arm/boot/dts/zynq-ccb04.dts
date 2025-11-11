@@ -10,6 +10,7 @@
 / {
 	model = "Hitachi CCB-04 board";
 	compatible = "xlnx,zynq-7000";
+	system-revision = <0x0001>;
 
 	aliases {
 		ethernet0 = &gem0;
@@ -369,10 +370,12 @@
         ethernet_phy1: ethernet-phy@1 {
             reg = <1>;
 		    device_type = "ethernet-phy";
+            micrel,individual-led-mode;
         };
         ethernet_phy2: ethernet-phy@2 {
             reg = <2>;
             device_type = "ethernet-phy";
+            micrel,individual-led-mode;
         };
     };
 };

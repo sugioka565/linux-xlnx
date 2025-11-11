@@ -94,6 +94,14 @@
 
 #define KSZPHY_WIRE_PAIR_MASK			0x3
 
+/* KSZ9131 LED Control Registers */
+#define MII_KSZ9131_LED_MODE_SELECT		0x16
+#define MII_KSZ9131_LED_BEHAVIOR		0x17
+#define MII_KSZ9131_LED_MODE			0x1a
+#define KSZ9131_LED_MODE_BIT14			BIT(14)
+#define KSZ9131RN_MMD_STRAP_OVERRIDE	0
+#define KSZ9131RN_MMD_COMMON_CTRL_REG_SINGLE_LED_MODE  BIT(4)
+
 #define LAN8814_CABLE_DIAG			0x12
 #define LAN8814_CABLE_DIAG_STAT_MASK		GENMASK(9, 8)
 #define LAN8814_CABLE_DIAG_VCT_DATA_MASK	GENMASK(7, 0)
@@ -1233,6 +1241,55 @@ static int ksz9131_led_errata(struct phy_device *phydev)
 	return phy_set_bits(phydev, 0x1e, BIT(9));
 }
 
+/* Configure KSZ9131 LED behavior from device tree
+ * micrel,led-mode-select: LED mode selection (register 0x16)
+ * micrel,led-mode-behavior: LED behavior configuration (register 0x17)
+ * Register 0x1a bit14: Must be cleared for proper LED operation
+ */
+static int ksz9131_config_leds(struct phy_device *phydev,
+			       struct device_node *of_node)
+{
+	u32 led_mode_select, led_mode_behavior;
+	int ret;
+
+	if (of_property_read_bool(of_node, "micrel,individual-led-mode")) {
+		ret = phy_modify_mmd(phydev, KSZ9131RN_MMD_COMMON_CTRL_REG, KSZ9131RN_MMD_STRAP_OVERRIDE,
+            KSZ9131RN_MMD_COMMON_CTRL_REG_SINGLE_LED_MODE, KSZ9131RN_MMD_COMMON_CTRL_REG_SINGLE_LED_MODE);
+		if (ret < 0) {
+			phydev_err(phydev, "failed to set individual LED mode\n");
+			return ret;
+		}
+        return 0;
+	}
+	/* Read LED mode select from device tree */
+	ret = of_property_read_u32(of_node, "micrel,led-mode-select", &led_mode_select);
+	if (ret == 0) {
+        /* Clear bit14 of LED mode register (0x1a) for enhanced LED operation */
+        ret = phy_clear_bits(phydev, MII_KSZ9131_LED_MODE, KSZ9131_LED_MODE_BIT14);
+        if (ret < 0) {
+            phydev_err(phydev, "failed to clear LED mode bit14\n");
+            return ret;
+        }
+        ret = phy_write(phydev, MII_KSZ9131_LED_MODE_SELECT, led_mode_select);
+		if (ret < 0) {
+			phydev_err(phydev, "failed to set LED mode select\n");
+			return ret;
+		}
+
+        /* Read LED behavior from device tree */
+        ret = of_property_read_u32(of_node, "micrel,led-mode-behavior",  &led_mode_behavior);
+        if (ret == 0) {
+            ret = phy_write(phydev, MII_KSZ9131_LED_BEHAVIOR, led_mode_behavior);
+            if (ret < 0) {
+                phydev_err(phydev, "failed to set LED behavior\n");
+                return ret;
+            }
+        }
+	}
+
+	return 0;
+}
+
 static int ksz9131_config_init(struct phy_device *phydev)
 {
 	struct device_node *of_node;
@@ -1285,6 +1342,10 @@ static int ksz9131_config_init(struct phy_device *phydev)
 	ret = ksz9131_of_load_skew_values(phydev, of_node,
 					  MII_KSZ9031RN_TX_DATA_PAD_SKEW, 4,
 					  tx_data_skews, 4);
+	if (ret < 0)
+		return ret;
+
+	ret = ksz9131_config_leds(phydev, of_node);
 	if (ret < 0)
 		return ret;
 
