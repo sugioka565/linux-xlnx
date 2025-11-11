@@ -70,6 +70,54 @@
 		led5 { gpios = <&gpio0  99 GPIO_ACTIVE_HIGH>; };
 		led6 { gpios = <&gpio0 100 GPIO_ACTIVE_HIGH>; };
 		led7 { gpios = <&gpio0 101 GPIO_ACTIVE_HIGH>; };
+    };
+    tbb_0_leds {
+        compatible = "gpio-leds";
+        tbb_0_0 { gpios = <&tbb_0 5 GPIO_ACTIVE_LOW>; };
+        tbb_0_1 { gpios = <&tbb_0 6 GPIO_ACTIVE_LOW>; };
+        tbb_0_2 { gpios = <&tbb_0 7 GPIO_ACTIVE_LOW>; };
+	};
+    tbb_1_leds {
+        compatible = "gpio-leds";
+        tbb_1_0 { gpios = <&tbb_1 5 GPIO_ACTIVE_LOW>; };
+        tbb_1_1 { gpios = <&tbb_1 6 GPIO_ACTIVE_LOW>; };
+        tbb_1_2 { gpios = <&tbb_1 7 GPIO_ACTIVE_LOW>; };
+	};
+    tbb_2_leds {
+        compatible = "gpio-leds";
+        tbb_2_0 { gpios = <&tbb_2 5 GPIO_ACTIVE_LOW>; };
+        tbb_2_1 { gpios = <&tbb_2 6 GPIO_ACTIVE_LOW>; };
+        tbb_2_2 { gpios = <&tbb_2 7 GPIO_ACTIVE_LOW>; };
+	};
+    tbb_3_leds {
+        compatible = "gpio-leds";
+        tbb_3_0 { gpios = <&tbb_3 5 GPIO_ACTIVE_LOW>; };
+        tbb_3_1 { gpios = <&tbb_3 6 GPIO_ACTIVE_LOW>; };
+        tbb_3_2 { gpios = <&tbb_3 7 GPIO_ACTIVE_LOW>; };
+	};
+    tbb_4_leds {
+        compatible = "gpio-leds";
+        tbb_4_0 { gpios = <&tbb_4 5 GPIO_ACTIVE_LOW>; };
+        tbb_4_1 { gpios = <&tbb_4 6 GPIO_ACTIVE_LOW>; };
+        tbb_4_2 { gpios = <&tbb_4 7 GPIO_ACTIVE_LOW>; };
+	};
+    tbb_5_leds {
+        compatible = "gpio-leds";
+        tbb_5_0 { gpios = <&tbb_5 5 GPIO_ACTIVE_LOW>; };
+        tbb_5_1 { gpios = <&tbb_5 6 GPIO_ACTIVE_LOW>; };
+        tbb_5_2 { gpios = <&tbb_5 7 GPIO_ACTIVE_LOW>; };
+	};
+    tbb_6_leds {
+        compatible = "gpio-leds";
+        tbb_6_0 { gpios = <&tbb_6 5 GPIO_ACTIVE_LOW>; };
+        tbb_6_1 { gpios = <&tbb_6 6 GPIO_ACTIVE_LOW>; };
+        tbb_6_2 { gpios = <&tbb_6 7 GPIO_ACTIVE_LOW>; };
+	};
+    tbb_7_leds {
+        compatible = "gpio-leds";
+        tbb_7_0 { gpios = <&tbb_7 5 GPIO_ACTIVE_LOW>; };
+        tbb_7_1 { gpios = <&tbb_7 6 GPIO_ACTIVE_LOW>; };
+        tbb_7_2 { gpios = <&tbb_7 7 GPIO_ACTIVE_LOW>; };
 	};
 	amba_pl: amba_pl {
 		#address-cells = <1>;
@@ -270,6 +318,43 @@
 		compatible = "mmc-pwrseq-emmc";
 		reset-gpios = <&gpio0 109 GPIO_ACTIVE_HIGH>;
 	};
+
+	gpio-poweroff {
+		compatible = "gpio-poweroff";
+		gpios = <&gpio0 102 GPIO_ACTIVE_HIGH>;
+		/* シャットダウン時にGPIO 102をHIGHに駆動して電源を切断 */
+		/* ハードウェアの仕様に応じてGPIO_ACTIVE_LOWに変更する必要がある場合があります */
+	};
+
+	gpio-keys {
+		compatible = "gpio-keys";
+		autorepeat;
+
+		power-button {
+			label = "Power Button";
+			/* パワーオフをトリガーするGPIOピン番号を指定 */
+			gpios = <&gpio0 54 GPIO_ACTIVE_HIGH>;
+			linux,code = <KEY_POWER>;
+			debounce-interval = <50>; /* 50ms デバウンス */
+			wakeup-source;
+		};
+		power-button-2 {
+			label = "Power Button";
+			/* パワーオフをトリガーするGPIOピン番号を指定 */
+			gpios = <&gpio0 55 GPIO_ACTIVE_HIGH>;
+			linux,code = <KEY_POWER>;
+			debounce-interval = <50>; /* 50ms デバウンス */
+			wakeup-source;
+		};
+		power-button-3 {
+			label = "Power Button";
+			/* パワーオフをトリガーするGPIOピン番号を指定 */
+			gpios = <&gpio0 56 GPIO_ACTIVE_HIGH>;
+			linux,code = <KEY_POWER>;
+			debounce-interval = <50>; /* 50ms デバウンス */
+			wakeup-source;
+		};
+	};
 };
 
 &gem0 {
@@ -309,13 +394,77 @@
 		reg = <0x6f>;
 	};
 };
+&axi_iic_1 {
+    /* TBB GPIO expanders - uncomment as needed based on hardware configuration */
+    tbb_0: tbb@20 {
+        compatible = "diodes,pi4ioe5v96224";
+        reg = <0x20>;
+        gpio-controller;
+        #gpio-cells = <2>;
+    };
+    tbb_1: tbb@21 {
+        compatible = "diodes,pi4ioe5v96224";
+        reg = <0x21>;
+        gpio-controller;
+        #gpio-cells = <2>;
+    };
+    tbb_2: tbb@22 {
+        compatible = "diodes,pi4ioe5v96224";
+        reg = <0x22>;
+        gpio-controller;
+        #gpio-cells = <2>;
+    };
+    tbb_3: tbb@23 {
+        compatible = "diodes,pi4ioe5v96224";
+        reg = <0x23>;
+        gpio-controller;
+        #gpio-cells = <2>;
+    };
+    tbb_4: tbb@24 {
+        compatible = "diodes,pi4ioe5v96224";
+        reg = <0x24>;
+        gpio-controller;
+        #gpio-cells = <2>;
+    };
+    tbb_5: tbb@25 {
+        compatible = "diodes,pi4ioe5v96224";
+        reg = <0x25>;
+        gpio-controller;
+        #gpio-cells = <2>;
+    };
+    tbb_6: tbb@26 {
+        compatible = "diodes,pi4ioe5v96224";
+        reg = <0x26>;
+        gpio-controller;
+        #gpio-cells = <2>;
+    };
+    tbb_7: tbb@27 {
+        compatible = "diodes,pi4ioe5v96224";
+        reg = <0x27>;
+        gpio-controller;
+        #gpio-cells = <2>;
+    };
+};
 &axi_iic_2 {
-	lp5860t_0: lp5860t@40 {
+	lp5860t_0: lp5860t_0@40 {
 		compatible = "ti,lp5860t";
 		reg = <0x40>;
         /* SW線とCS線の数を設定 */
         ti,num-sw = <7>;   /* SW0-SW6 */
         ti,num-cs = <16>;   /* CS0-CS15 */
+        ti,led-base-name = "led0";
+        ti,disable-virtual;
+	};
+};
+&axi_iic_3 {
+	lp5860t_1: lp5860t_1@40 {
+		compatible = "ti,lp5860t";
+		reg = <0x40>;
+        /* SW線とCS線の数を設定 */
+        ti,num-sw = <7>;   /* SW0-SW6 */
+        ti,num-cs = <16>;   /* CS0-CS15 */
+        ti,led-base-name = "led1";
+        ti,disable-virtual;
 	};
 };
 &intc {
