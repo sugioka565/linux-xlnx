@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0
 dtb-$(CONFIG_ARCH_ZYNQ) += \
 	zynq-cc108.dtb \
+	zynq-ccb04.dtb \
 	zynq-ebaz4205.dtb \
 	zynq-microzed.dtb \
 	zynq-parallella.dtb \
