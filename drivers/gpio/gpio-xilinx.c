@@ -625,7 +625,7 @@ static int xgpio_probe(struct platform_device *pdev)
 
 	spin_lock_init(&chip->gpio_lock);
 
-	chip->gc.base = -1;
+	chip->gc.base = of_alias_get_id(pdev->dev.of_node, "gpio");
 	chip->gc.ngpio = bitmap_weight(chip->hw_map, 64);
 	chip->gc.parent = &pdev->dev;
 	chip->gc.direction_input = xgpio_dir_in;
