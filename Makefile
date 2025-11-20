@@ -10,6 +10,12 @@ NAME = Baby Opossum Posse
 # More info can be located in ./README
 # Comments in this file are targeted only to the developer, do not
 # expect to learn how to build the kernel reading this file.
+ARCH = arm
+CROSS_COMPILE = arm-linux-gnueabihf-
+export LOCALVERSION ?=
+export LOADADDR = 0x200000
+export INSTALL_MOD_PATH = $(shell pwd)/../rootfs
+export INSTALL_PATH = $(shell pwd)/../rootfs/boot
 
 ifeq ($(filter output-sync,$(.FEATURES)),)
 $(error GNU Make >= 4.0 is required. Your Make version is $(MAKE_VERSION))
