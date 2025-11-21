@@ -1,0 +1,45 @@
+# Makefile for UART debugging utilities
+# Usage: make -f Makefile.uart_debug
+
+CC = gcc
+CFLAGS = -Wall -O2
+TARGET_DUMP = uart_register_dump
+TARGET_SHELL = uart_debug.sh
+
+.PHONY: all clean help install
+
+all: $(TARGET_DUMP)
+	@echo ""
+	@echo "=== Build Complete ==="
+	@echo "Run with: sudo ./$(TARGET_DUMP)"
+	@echo "Or run: sudo ./$(TARGET_SHELL)"
+
+$(TARGET_DUMP): uart_register_dump.c
+	$(CC) $(CFLAGS) -o $@ $<
+	@chmod +x $(TARGET_SHELL)
+
+clean:
+	rm -f $(TARGET_DUMP)
+
+help:
+	@echo "UART IRQ Trigger Debugging Tools"
+	@echo ""
+	@echo "Build:"
+	@echo "  make -f Makefile.uart_debug"
+	@echo ""
+	@echo "Tools:"
+	@echo "  ./uart_register_dump - C program to read hardware registers"
+	@echo "  ./uart_debug.sh      - Shell script for system-level checks"
+	@echo ""
+	@echo "Documentation:"
+	@echo "  UART_IRQ_ANALYSIS.md - Detailed analysis of IRQ trigger behavior"
+	@echo ""
+	@echo "Usage:"
+	@echo "  sudo ./uart_register_dump    # Read UART hardware registers"
+	@echo "  sudo ./uart_debug.sh         # System-level diagnostics"
+
+install: all
+	@echo "Copying to /usr/local/bin..."
+	@sudo cp $(TARGET_DUMP) /usr/local/bin/
+	@sudo cp $(TARGET_SHELL) /usr/local/bin/
+	@echo "Installed. Run with: sudo uart_register_dump"
