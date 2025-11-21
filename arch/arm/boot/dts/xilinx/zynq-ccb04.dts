@@ -418,7 +418,7 @@
 		axi_uart16550_0: serial@43c40000 {
 			clock-frequency = <19660800>;
 			clocks = <&uart_xin_clock>;
-			compatible = "ns16550";
+			compatible = "ns16550a";
 			device_type = "serial";
 			reg-offset = <0x1000>;
 			reg-shift = <2>;
@@ -431,7 +431,7 @@
 		axi_uart16550_1: serial@43c00000 {
 			clock-frequency = <19660800>;
 			clocks = <&uart_xin_clock>;
-			compatible = "ns16550";
+			compatible = "ns16550a";
 			device_type = "serial";
 			reg-offset = <0x1000>;
 			reg-shift = <2>;
