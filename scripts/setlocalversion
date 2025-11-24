@@ -204,5 +204,7 @@ elif [ "${LOCALVERSION+set}" != "set" ]; then
 	# to an empty string), we don't want to append a plus sign.
 	scm_version="$(scm_version --short)"
 fi
+# CCB04: Disable automatic git hash and -dirty suffix
+scm_version=""
 
 echo "${KERNELVERSION}${file_localversion}${config_localversion}${LOCALVERSION}${scm_version}"
