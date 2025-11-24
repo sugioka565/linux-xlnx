@@ -1015,6 +1015,13 @@ static int macb_mdiobus_register(struct macb *bp, struct device_node *mdio_np)
 		return -EPROBE_DEFER;
 	}
 
+	/* If we found a MDIO producer device, PHYs are on another MAC's MDIO bus
+	 * so don't register our own MDIO bus */
+	if (mdio_pdev) {
+		platform_device_put(mdio_pdev);
+		return 0;
+	}
+
 	platform_device_put(mdio_pdev);
 	return mdiobus_register(bp->mii_bus);
 }
