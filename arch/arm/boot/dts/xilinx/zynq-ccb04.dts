@@ -15,11 +15,7 @@
 	aliases {
 		ethernet0 = &gem0;
 		ethernet1 = &gem1;
-		gpio512 = &gpio0;
-		gpio1000 = &axi_gpio_0;
-		gpio1048 = &axi_gpio_1;
-		gpio1096 = &axi_gpio_2;
-		gpio1144 = &axi_gpio_3;
+		gpio1000 = &gpio0;
 		i2c0 = &axi_iic_0;
 		i2c2 = &axi_iic_2;
 		i2c3 = &axi_iic_3;
@@ -49,40 +45,6 @@
 		bootargs = "console=ttyPS0,115200 root=/dev/mmcblk1p1 rw rootwait";
 		stdout-path = "serial0:115200n8";
 	};
-	leds {
-		compatible = "gpio-leds";
-		led0 {
-			gpios = <&gpio0 94 GPIO_ACTIVE_HIGH>;
-			linux,default-trigger = "heartbeat";
-			// function = LED_FUNCTION_HEARTBEAT;
-		};
-		led1 {
-			gpios = <&gpio0 95 GPIO_ACTIVE_HIGH>;
-			linux,default-trigger = "cpu";
-			// function = LED_FUNCTION_CPU;
-		};
-		led2 {
-			gpios = <&gpio0 96 GPIO_ACTIVE_HIGH>;
-			linux,default-trigger = "mmc0";
-			// function = LED_FUNCTION_DISK;
-		};
-		led3 {
-			gpios = <&gpio0  97 GPIO_ACTIVE_HIGH>;
-			linux,default-trigger = "mmc1";
-		};
-		led4 {
-			gpios = <&gpio0 98 GPIO_ACTIVE_HIGH>;
-		};
-		led5 {
-			gpios = <&gpio0 99 GPIO_ACTIVE_HIGH>;
-		};
-		led6 {
-			gpios = <&gpio0 100 GPIO_ACTIVE_HIGH>;
-		};
-		led7 {
-			gpios = <&gpio0 101 GPIO_ACTIVE_HIGH>;
-		};
-	};
 	tbb_leds {
 		compatible = "gpio-leds";
 		tbb_0_0 { gpios = <&axi_gpio_0 5  GPIO_ACTIVE_HIGH>; };
@@ -110,12 +72,411 @@
 		tbb_7_1 { gpios = <&axi_gpio_3 30 GPIO_ACTIVE_HIGH>; };
 		tbb_7_2 { gpios = <&axi_gpio_3 31 GPIO_ACTIVE_HIGH>; };
 	};
+	led_panel_0_0 {
+		compatible = "gpio-leds";
+		out_a_0	{ gpios = <&lp5860t_0  0 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_0 0  GPIO_ACTIVE_HIGH>; };
+		out_b_0	{ gpios = <&lp5860t_0  1 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_0 1  GPIO_ACTIVE_HIGH>; };
+		rsw_0	{ gpios = <&lp5860t_0  2 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_0 8  GPIO_ACTIVE_HIGH>; };
+		msw1_0	{ gpios = <&lp5860t_0  3 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_0 9  GPIO_ACTIVE_HIGH>; };
+		msw2_0	{ gpios = <&lp5860t_0  4 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_0 10 GPIO_ACTIVE_HIGH>; };
+		out_a_1	{ gpios = <&lp5860t_0  5 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_0 2  GPIO_ACTIVE_HIGH>; };
+		out_b_1	{ gpios = <&lp5860t_0  6 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_0 3  GPIO_ACTIVE_HIGH>; };
+		rsw_1	{ gpios = <&lp5860t_0  7 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_0 11 GPIO_ACTIVE_HIGH>; };
+		msw1_1	{ gpios = <&lp5860t_0  8 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_0 12 GPIO_ACTIVE_HIGH>; };
+		msw2_1	{ gpios = <&lp5860t_0  9 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_0 13 GPIO_ACTIVE_HIGH>; };
+		out_a_2	{ gpios = <&lp5860t_0 10 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_0 24 GPIO_ACTIVE_HIGH>; };
+		out_b_2	{ gpios = <&lp5860t_0 11 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_0 25 GPIO_ACTIVE_HIGH>; };
+		rsw_2	{ gpios = <&lp5860t_0 12 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_0 32 GPIO_ACTIVE_HIGH>; };
+		msw1_2	{ gpios = <&lp5860t_0 13 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_0 33 GPIO_ACTIVE_HIGH>; };
+		msw2_2	{ gpios = <&lp5860t_0 14 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_0 34 GPIO_ACTIVE_HIGH>; };
+		out_a_3	{ gpios = <&lp5860t_0 16 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_0 26 GPIO_ACTIVE_HIGH>; };
+		out_b_3	{ gpios = <&lp5860t_0 17 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_0 27 GPIO_ACTIVE_HIGH>; };
+		rsw_3	{ gpios = <&lp5860t_0 18 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_0 35 GPIO_ACTIVE_HIGH>; };
+		msw1_3	{ gpios = <&lp5860t_0 19 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_0 36 GPIO_ACTIVE_HIGH>; };
+		msw2_3	{ gpios = <&lp5860t_0 20 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_0 37 GPIO_ACTIVE_HIGH>; };
+		din_0	{ gpios = <&lp5860t_0 48 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_0 16 GPIO_ACTIVE_HIGH>; };
+		din_1	{ gpios = <&lp5860t_0 49 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_0 17 GPIO_ACTIVE_HIGH>; };
+		din_2	{ gpios = <&lp5860t_0 50 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_0 18 GPIO_ACTIVE_HIGH>; };
+		din_3	{ gpios = <&lp5860t_0 51 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_0 19 GPIO_ACTIVE_HIGH>; };
+		din_4	{ gpios = <&lp5860t_0 52 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_0 40 GPIO_ACTIVE_HIGH>; };
+		din_5	{ gpios = <&lp5860t_0 53 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_0 41 GPIO_ACTIVE_HIGH>; };
+		din_6	{ gpios = <&lp5860t_0 54 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_0 42 GPIO_ACTIVE_HIGH>; };
+		din_7	{ gpios = <&lp5860t_0 55 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_0 43 GPIO_ACTIVE_HIGH>; };
+		dout_0	{ gpios = <&lp5860t_0 64 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_0 20 GPIO_ACTIVE_HIGH>; };
+		dout_1	{ gpios = <&lp5860t_0 65 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_0 21 GPIO_ACTIVE_HIGH>; };
+		dout_2	{ gpios = <&lp5860t_0 66 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_0 22 GPIO_ACTIVE_HIGH>; };
+		dout_3	{ gpios = <&lp5860t_0 67 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_0 23 GPIO_ACTIVE_HIGH>; };
+		dout_4	{ gpios = <&lp5860t_0 68 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_0 44 GPIO_ACTIVE_HIGH>; };
+		dout_5	{ gpios = <&lp5860t_0 69 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_0 45 GPIO_ACTIVE_HIGH>; };
+		dout_6	{ gpios = <&lp5860t_0 70 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_0 46 GPIO_ACTIVE_HIGH>; };
+		dout_7	{ gpios = <&lp5860t_0 71 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_0 47 GPIO_ACTIVE_HIGH>; };
+	};
+	led_panel_0_1 {
+		compatible = "gpio-leds";
+		out_a_4	{ gpios = <&lp5860t_0 21 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_1 0  GPIO_ACTIVE_HIGH>; };
+		out_b_4	{ gpios = <&lp5860t_0 22 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_1 1  GPIO_ACTIVE_HIGH>; };
+		rsw_4	{ gpios = <&lp5860t_0 23 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_1 8  GPIO_ACTIVE_HIGH>; };
+		msw1_4	{ gpios = <&lp5860t_0 24 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_1 9  GPIO_ACTIVE_HIGH>; };
+		msw2_4	{ gpios = <&lp5860t_0 25 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_1 10 GPIO_ACTIVE_HIGH>; };
+		out_a_5	{ gpios = <&lp5860t_0 26 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_1 2  GPIO_ACTIVE_HIGH>; };
+		out_b_5	{ gpios = <&lp5860t_0 27 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_1 3  GPIO_ACTIVE_HIGH>; };
+		rsw_5	{ gpios = <&lp5860t_0 28 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_1 11 GPIO_ACTIVE_HIGH>; };
+		msw1_5	{ gpios = <&lp5860t_0 29 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_1 12 GPIO_ACTIVE_HIGH>; };
+		msw2_5	{ gpios = <&lp5860t_0 30 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_1 13 GPIO_ACTIVE_HIGH>; };
+		out_a_6	{ gpios = <&lp5860t_0 32 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_1 24 GPIO_ACTIVE_HIGH>; };
+		out_b_6	{ gpios = <&lp5860t_0 33 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_1 25 GPIO_ACTIVE_HIGH>; };
+		rsw_6	{ gpios = <&lp5860t_0 34 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_1 32 GPIO_ACTIVE_HIGH>; };
+		msw1_6	{ gpios = <&lp5860t_0 35 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_1 33 GPIO_ACTIVE_HIGH>; };
+		msw2_6	{ gpios = <&lp5860t_0 36 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_1 34 GPIO_ACTIVE_HIGH>; };
+		out_a_7	{ gpios = <&lp5860t_0 37 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_1 26 GPIO_ACTIVE_HIGH>; };
+		out_b_7	{ gpios = <&lp5860t_0 38 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_1 27 GPIO_ACTIVE_HIGH>; };
+		rsw_7	{ gpios = <&lp5860t_0 39 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_1 35 GPIO_ACTIVE_HIGH>; };
+		msw1_7	{ gpios = <&lp5860t_0 40 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_1 36 GPIO_ACTIVE_HIGH>; };
+		msw2_7	{ gpios = <&lp5860t_0 41 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_1 37 GPIO_ACTIVE_HIGH>; };
+		din_8	{ gpios = <&lp5860t_0 56 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_1 16 GPIO_ACTIVE_HIGH>; };
+		din_9	{ gpios = <&lp5860t_0 57 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_1 17 GPIO_ACTIVE_HIGH>; };
+		din_10	{ gpios = <&lp5860t_0 58 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_1 18 GPIO_ACTIVE_HIGH>; };
+		din_11	{ gpios = <&lp5860t_0 59 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_1 19 GPIO_ACTIVE_HIGH>; };
+		din_12	{ gpios = <&lp5860t_0 60 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_1 40 GPIO_ACTIVE_HIGH>; };
+		din_13	{ gpios = <&lp5860t_0 61 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_1 41 GPIO_ACTIVE_HIGH>; };
+		din_14	{ gpios = <&lp5860t_0 62 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_1 42 GPIO_ACTIVE_HIGH>; };
+		din_15	{ gpios = <&lp5860t_0 63 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_1 43 GPIO_ACTIVE_HIGH>; };
+		dout_8	{ gpios = <&lp5860t_0 72 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_1 20 GPIO_ACTIVE_HIGH>; };
+		dout_9	{ gpios = <&lp5860t_0 73 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_1 21 GPIO_ACTIVE_HIGH>; };
+		dout_10	{ gpios = <&lp5860t_0 74 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_1 22 GPIO_ACTIVE_HIGH>; };
+		dout_11	{ gpios = <&lp5860t_0 75 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_1 23 GPIO_ACTIVE_HIGH>; };
+		dout_12	{ gpios = <&lp5860t_0 76 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_1 44 GPIO_ACTIVE_HIGH>; };
+		dout_13	{ gpios = <&lp5860t_0 77 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_1 45 GPIO_ACTIVE_HIGH>; };
+		dout_14	{ gpios = <&lp5860t_0 78 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_1 46 GPIO_ACTIVE_HIGH>; };
+		dout_15	{ gpios = <&lp5860t_0 79 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_1 47 GPIO_ACTIVE_HIGH>; };
+	};
+	led_panel_0_2 {
+		compatible = "gpio-leds";
+		seg00_A	{ gpios = <&lp5860t_0  80 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 72 GPIO_ACTIVE_HIGH>; };
+		seg00_B	{ gpios = <&lp5860t_0  81 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 73 GPIO_ACTIVE_HIGH>; };
+		seg00_C	{ gpios = <&lp5860t_0  82 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 74 GPIO_ACTIVE_HIGH>; };
+		seg00_D	{ gpios = <&lp5860t_0  83 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 75 GPIO_ACTIVE_HIGH>; };
+		seg00_E	{ gpios = <&lp5860t_0  84 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 76 GPIO_ACTIVE_HIGH>; };
+		seg00_F	{ gpios = <&lp5860t_0  85 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 77 GPIO_ACTIVE_HIGH>; };
+		seg00_G	{ gpios = <&lp5860t_0  86 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 78 GPIO_ACTIVE_HIGH>; };
+		seg00_dt{ gpios = <&lp5860t_0  87 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 79 GPIO_ACTIVE_HIGH>; };
+		seg01_A	{ gpios = <&lp5860t_0  88 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 80 GPIO_ACTIVE_HIGH>; };
+		seg01_B	{ gpios = <&lp5860t_0  89 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 81 GPIO_ACTIVE_HIGH>; };
+		seg01_C	{ gpios = <&lp5860t_0  90 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 82 GPIO_ACTIVE_HIGH>; };
+		seg01_D	{ gpios = <&lp5860t_0  91 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 83 GPIO_ACTIVE_HIGH>; };
+		seg01_E	{ gpios = <&lp5860t_0  92 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 84 GPIO_ACTIVE_HIGH>; };
+		seg01_F	{ gpios = <&lp5860t_0  93 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 85 GPIO_ACTIVE_HIGH>; };
+		seg01_G	{ gpios = <&lp5860t_0  94 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 86 GPIO_ACTIVE_HIGH>; };
+		seg01_dt{ gpios = <&lp5860t_0  95 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 87 GPIO_ACTIVE_HIGH>; };
+		eth00_1	{ gpios = <&lp5860t_0  96 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 57 GPIO_ACTIVE_HIGH>; };
+		eth00_2	{ gpios = <&lp5860t_0  97 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 58 GPIO_ACTIVE_HIGH>; };
+		eth01_1	{ gpios = <&lp5860t_0  98 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 59 GPIO_ACTIVE_HIGH>; };
+		eth01_2	{ gpios = <&lp5860t_0  99 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 60 GPIO_ACTIVE_HIGH>; };
+		error0	{ gpios = <&lp5860t_0 100 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 62 GPIO_ACTIVE_HIGH>; };
+		power0	{ gpios = <&lp5860t_0 101 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 63 GPIO_ACTIVE_HIGH>; };
+		run0	{ gpios = <&lp5860t_0 102 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 64 GPIO_ACTIVE_HIGH>; };
+	};
+	led_panel_1_0 {
+		compatible = "gpio-leds";
+		out_a_8	{ gpios = <&lp5860t_1  0 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_2 0  GPIO_ACTIVE_HIGH>; };
+		out_b_8	{ gpios = <&lp5860t_1  1 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_2 1  GPIO_ACTIVE_HIGH>; };
+		rsw_8	{ gpios = <&lp5860t_1  2 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_2 8  GPIO_ACTIVE_HIGH>; };
+		msw1_8	{ gpios = <&lp5860t_1  3 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_2 9  GPIO_ACTIVE_HIGH>; };
+		msw2_8	{ gpios = <&lp5860t_1  4 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_2 10 GPIO_ACTIVE_HIGH>; };
+		out_a_9	{ gpios = <&lp5860t_1  5 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_2 2  GPIO_ACTIVE_HIGH>; };
+		out_b_9	{ gpios = <&lp5860t_1  6 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_2 3  GPIO_ACTIVE_HIGH>; };
+		rsw_9	{ gpios = <&lp5860t_1  7 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_2 11 GPIO_ACTIVE_HIGH>; };
+		msw1_9	{ gpios = <&lp5860t_1  8 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_2 12 GPIO_ACTIVE_HIGH>; };
+		msw2_9	{ gpios = <&lp5860t_1  9 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_2 13 GPIO_ACTIVE_HIGH>; };
+		out_a_10{ gpios = <&lp5860t_1 10 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_2 24 GPIO_ACTIVE_HIGH>; };
+		out_b_10{ gpios = <&lp5860t_1 11 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_2 25 GPIO_ACTIVE_HIGH>; };
+		rsw_10	{ gpios = <&lp5860t_1 12 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_2 32 GPIO_ACTIVE_HIGH>; };
+		msw1_10	{ gpios = <&lp5860t_1 13 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_2 33 GPIO_ACTIVE_HIGH>; };
+		msw2_10	{ gpios = <&lp5860t_1 14 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_2 34 GPIO_ACTIVE_HIGH>; };
+		out_a_11{ gpios = <&lp5860t_1 16 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_2 26 GPIO_ACTIVE_HIGH>; };
+		out_b_11{ gpios = <&lp5860t_1 17 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_2 27 GPIO_ACTIVE_HIGH>; };
+		rsw_11	{ gpios = <&lp5860t_1 18 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_2 35 GPIO_ACTIVE_HIGH>; };
+		msw1_11	{ gpios = <&lp5860t_1 19 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_2 36 GPIO_ACTIVE_HIGH>; };
+		msw2_11	{ gpios = <&lp5860t_1 20 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_2 37 GPIO_ACTIVE_HIGH>; };
+		din_16	{ gpios = <&lp5860t_1 48 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_2 16 GPIO_ACTIVE_HIGH>; };
+		din_17	{ gpios = <&lp5860t_1 49 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_2 17 GPIO_ACTIVE_HIGH>; };
+		din_18	{ gpios = <&lp5860t_1 50 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_2 18 GPIO_ACTIVE_HIGH>; };
+		din_19	{ gpios = <&lp5860t_1 51 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_2 19 GPIO_ACTIVE_HIGH>; };
+		din_20	{ gpios = <&lp5860t_1 52 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_2 40 GPIO_ACTIVE_HIGH>; };
+		din_21	{ gpios = <&lp5860t_1 53 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_2 41 GPIO_ACTIVE_HIGH>; };
+		din_22	{ gpios = <&lp5860t_1 54 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_2 42 GPIO_ACTIVE_HIGH>; };
+		din_23	{ gpios = <&lp5860t_1 55 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_2 43 GPIO_ACTIVE_HIGH>; };
+		dout_16	{ gpios = <&lp5860t_1 64 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_2 20 GPIO_ACTIVE_HIGH>; };
+		dout_17	{ gpios = <&lp5860t_1 65 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_2 21 GPIO_ACTIVE_HIGH>; };
+		dout_18	{ gpios = <&lp5860t_1 66 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_2 22 GPIO_ACTIVE_HIGH>; };
+		dout_19	{ gpios = <&lp5860t_1 67 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_2 23 GPIO_ACTIVE_HIGH>; };
+		dout_20	{ gpios = <&lp5860t_1 68 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_2 44 GPIO_ACTIVE_HIGH>; };
+		dout_21	{ gpios = <&lp5860t_1 69 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_2 45 GPIO_ACTIVE_HIGH>; };
+		dout_22	{ gpios = <&lp5860t_1 70 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_2 46 GPIO_ACTIVE_HIGH>; };
+		dout_23	{ gpios = <&lp5860t_1 71 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_2 47 GPIO_ACTIVE_HIGH>; };
+	};
+	led_panel_1_1 {
+		compatible = "gpio-leds";
+		out_a_12{ gpios = <&lp5860t_1 21 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_3 0  GPIO_ACTIVE_HIGH>; };
+		out_b_12{ gpios = <&lp5860t_1 22 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_3 1  GPIO_ACTIVE_HIGH>; };
+		rsw_12	{ gpios = <&lp5860t_1 23 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_3 8  GPIO_ACTIVE_HIGH>; };
+		msw1_12	{ gpios = <&lp5860t_1 24 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_3 9  GPIO_ACTIVE_HIGH>; };
+		msw2_12	{ gpios = <&lp5860t_1 25 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_3 10 GPIO_ACTIVE_HIGH>; };
+		out_a_13{ gpios = <&lp5860t_1 26 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_3 2  GPIO_ACTIVE_HIGH>; };
+		out_b_13{ gpios = <&lp5860t_1 27 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_3 3  GPIO_ACTIVE_HIGH>; };
+		rsw_13	{ gpios = <&lp5860t_1 28 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_3 11 GPIO_ACTIVE_HIGH>; };
+		msw1_13	{ gpios = <&lp5860t_1 29 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_3 12 GPIO_ACTIVE_HIGH>; };
+		msw2_13	{ gpios = <&lp5860t_1 30 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_3 13 GPIO_ACTIVE_HIGH>; };
+		out_a_14{ gpios = <&lp5860t_1 32 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_3 24 GPIO_ACTIVE_HIGH>; };
+		out_b_14{ gpios = <&lp5860t_1 33 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_3 25 GPIO_ACTIVE_HIGH>; };
+		rsw_14	{ gpios = <&lp5860t_1 34 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_3 32 GPIO_ACTIVE_HIGH>; };
+		msw1_14	{ gpios = <&lp5860t_1 35 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_3 33 GPIO_ACTIVE_HIGH>; };
+		msw2_14	{ gpios = <&lp5860t_1 36 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_3 34 GPIO_ACTIVE_HIGH>; };
+		out_a_15{ gpios = <&lp5860t_1 37 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_3 26 GPIO_ACTIVE_HIGH>; };
+		out_b_15{ gpios = <&lp5860t_1 38 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_3 27 GPIO_ACTIVE_HIGH>; };
+		rsw_15	{ gpios = <&lp5860t_1 39 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_3 35 GPIO_ACTIVE_HIGH>; };
+		msw1_15	{ gpios = <&lp5860t_1 40 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_3 36 GPIO_ACTIVE_HIGH>; };
+		msw2_15	{ gpios = <&lp5860t_1 41 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_3 37 GPIO_ACTIVE_HIGH>; };
+		din_24	{ gpios = <&lp5860t_1 56 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_3 16 GPIO_ACTIVE_HIGH>; };
+		din_25	{ gpios = <&lp5860t_1 57 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_3 17 GPIO_ACTIVE_HIGH>; };
+		din_26	{ gpios = <&lp5860t_1 58 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_3 18 GPIO_ACTIVE_HIGH>; };
+		din_27	{ gpios = <&lp5860t_1 59 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_3 19 GPIO_ACTIVE_HIGH>; };
+		din_28	{ gpios = <&lp5860t_1 60 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_3 40 GPIO_ACTIVE_HIGH>; };
+		din_29	{ gpios = <&lp5860t_1 61 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_3 41 GPIO_ACTIVE_HIGH>; };
+		din_30	{ gpios = <&lp5860t_1 62 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_3 42 GPIO_ACTIVE_HIGH>; };
+		din_31	{ gpios = <&lp5860t_1 63 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_3 43 GPIO_ACTIVE_HIGH>; };
+		dout_24	{ gpios = <&lp5860t_1 72 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_3 20 GPIO_ACTIVE_HIGH>; };
+		dout_25	{ gpios = <&lp5860t_1 73 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_3 21 GPIO_ACTIVE_HIGH>; };
+		dout_26	{ gpios = <&lp5860t_1 74 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_3 22 GPIO_ACTIVE_HIGH>; };
+		dout_27	{ gpios = <&lp5860t_1 75 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_3 23 GPIO_ACTIVE_HIGH>; };
+		dout_28	{ gpios = <&lp5860t_1 76 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_3 44 GPIO_ACTIVE_HIGH>; };
+		dout_29	{ gpios = <&lp5860t_1 77 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_3 45 GPIO_ACTIVE_HIGH>; };
+		dout_30	{ gpios = <&lp5860t_1 78 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_3 46 GPIO_ACTIVE_HIGH>; };
+		dout_31	{ gpios = <&lp5860t_1 79 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_3 47 GPIO_ACTIVE_HIGH>; };
+	};
+	led_panel_1_2 {
+		compatible = "gpio-leds";
+		seg10_A	{ gpios = <&lp5860t_1  80 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 88 GPIO_ACTIVE_HIGH>; };
+		seg10_B	{ gpios = <&lp5860t_1  81 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 89 GPIO_ACTIVE_HIGH>; };
+		seg10_C	{ gpios = <&lp5860t_1  82 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 90 GPIO_ACTIVE_HIGH>; };
+		seg10_D	{ gpios = <&lp5860t_1  83 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 91 GPIO_ACTIVE_HIGH>; };
+		seg10_E	{ gpios = <&lp5860t_1  84 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 92 GPIO_ACTIVE_HIGH>; };
+		seg10_F	{ gpios = <&lp5860t_1  85 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 93 GPIO_ACTIVE_HIGH>; };
+		seg10_G	{ gpios = <&lp5860t_1  86 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 94 GPIO_ACTIVE_HIGH>; };
+		seg10_dt{ gpios = <&lp5860t_1  87 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 95 GPIO_ACTIVE_HIGH>; };
+		seg11_A	{ gpios = <&lp5860t_1  88 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 96 GPIO_ACTIVE_HIGH>; };
+		seg11_B	{ gpios = <&lp5860t_1  89 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 97 GPIO_ACTIVE_HIGH>; };
+		seg11_C	{ gpios = <&lp5860t_1  90 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 98 GPIO_ACTIVE_HIGH>; };
+		seg11_D	{ gpios = <&lp5860t_1  91 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 99 GPIO_ACTIVE_HIGH>; };
+		seg11_E	{ gpios = <&lp5860t_1  92 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 100 GPIO_ACTIVE_HIGH>; };
+		seg11_F	{ gpios = <&lp5860t_1  93 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 101 GPIO_ACTIVE_HIGH>; };
+		seg11_G	{ gpios = <&lp5860t_1  94 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 102 GPIO_ACTIVE_HIGH>; };
+		seg11_dt{ gpios = <&lp5860t_1  95 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 103 GPIO_ACTIVE_HIGH>; };
+		eth10_1	{ gpios = <&lp5860t_1  96 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 65 GPIO_ACTIVE_HIGH>; };
+		eth10_2	{ gpios = <&lp5860t_1  97 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 66 GPIO_ACTIVE_HIGH>; };
+		eth11_1	{ gpios = <&lp5860t_1  98 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 67 GPIO_ACTIVE_HIGH>; };
+		eth11_2	{ gpios = <&lp5860t_1  99 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 68 GPIO_ACTIVE_HIGH>; };
+		error1	{ gpios = <&lp5860t_1 100 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 69 GPIO_ACTIVE_HIGH>; };
+		power1	{ gpios = <&lp5860t_1 101 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 70 GPIO_ACTIVE_HIGH>; };
+		run1	{ gpios = <&lp5860t_1 102 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 71 GPIO_ACTIVE_HIGH>; };
+	};
 
 	/* CCB04 DIO SMON Platform Device */
 	ccb04_dio_smon {
 		compatible = "custom,ccb04_dio_smon";
 		status = "okay";
-		smon4-gpio = <&gpio0 61 GPIO_ACTIVE_HIGH>;
+
+		/* DIN GPIOs (32 input channels) - formula: (i/4)*24 + 16 + (i%4) */
+		din-gpios = <&axi_gpio_0 16 GPIO_ACTIVE_HIGH>,  /* din0 */
+		            <&axi_gpio_0 17 GPIO_ACTIVE_HIGH>,  /* din1 */
+		            <&axi_gpio_0 18 GPIO_ACTIVE_HIGH>,  /* din2 */
+		            <&axi_gpio_0 19 GPIO_ACTIVE_HIGH>,  /* din3 */
+		            <&axi_gpio_0 40 GPIO_ACTIVE_HIGH>,  /* din4 */
+		            <&axi_gpio_0 41 GPIO_ACTIVE_HIGH>,  /* din5 */
+		            <&axi_gpio_0 42 GPIO_ACTIVE_HIGH>,  /* din6 */
+		            <&axi_gpio_0 43 GPIO_ACTIVE_HIGH>,  /* din7 */
+		            <&axi_gpio_1 16 GPIO_ACTIVE_HIGH>,  /* din8 */
+		            <&axi_gpio_1 17 GPIO_ACTIVE_HIGH>,  /* din9 */
+		            <&axi_gpio_1 18 GPIO_ACTIVE_HIGH>,  /* din10 */
+		            <&axi_gpio_1 19 GPIO_ACTIVE_HIGH>,  /* din11 */
+		            <&axi_gpio_1 40 GPIO_ACTIVE_HIGH>,  /* din12 */
+		            <&axi_gpio_1 41 GPIO_ACTIVE_HIGH>,  /* din13 */
+		            <&axi_gpio_1 42 GPIO_ACTIVE_HIGH>,  /* din14 */
+		            <&axi_gpio_1 43 GPIO_ACTIVE_HIGH>,  /* din15 */
+		            <&axi_gpio_2 16 GPIO_ACTIVE_HIGH>,  /* din16 */
+		            <&axi_gpio_2 17 GPIO_ACTIVE_HIGH>,  /* din17 */
+		            <&axi_gpio_2 18 GPIO_ACTIVE_HIGH>,  /* din18 */
+		            <&axi_gpio_2 19 GPIO_ACTIVE_HIGH>,  /* din19 */
+		            <&axi_gpio_2 40 GPIO_ACTIVE_HIGH>,  /* din20 */
+		            <&axi_gpio_2 41 GPIO_ACTIVE_HIGH>,  /* din21 */
+		            <&axi_gpio_2 42 GPIO_ACTIVE_HIGH>,  /* din22 */
+		            <&axi_gpio_2 43 GPIO_ACTIVE_HIGH>,  /* din23 */
+		            <&axi_gpio_3 16 GPIO_ACTIVE_HIGH>,  /* din24 */
+		            <&axi_gpio_3 17 GPIO_ACTIVE_HIGH>,  /* din25 */
+		            <&axi_gpio_3 18 GPIO_ACTIVE_HIGH>,  /* din26 */
+		            <&axi_gpio_3 19 GPIO_ACTIVE_HIGH>,  /* din27 */
+		            <&axi_gpio_3 40 GPIO_ACTIVE_HIGH>,  /* din28 */
+		            <&axi_gpio_3 41 GPIO_ACTIVE_HIGH>,  /* din29 */
+		            <&axi_gpio_3 42 GPIO_ACTIVE_HIGH>,  /* din30 */
+		            <&axi_gpio_3 43 GPIO_ACTIVE_HIGH>;  /* din31 */
+
+		/* DOUT GPIOs (32 output channels) - formula: (i/4)*24 + 20 + (i%4) */
+		dout-gpios = <&axi_gpio_0 20 GPIO_ACTIVE_HIGH>,  /* dout0 */
+		             <&axi_gpio_0 21 GPIO_ACTIVE_HIGH>,  /* dout1 */
+		             <&axi_gpio_0 22 GPIO_ACTIVE_HIGH>,  /* dout2 */
+		             <&axi_gpio_0 23 GPIO_ACTIVE_HIGH>,  /* dout3 */
+		             <&axi_gpio_0 44 GPIO_ACTIVE_HIGH>,  /* dout4 */
+		             <&axi_gpio_0 45 GPIO_ACTIVE_HIGH>,  /* dout5 */
+		             <&axi_gpio_0 46 GPIO_ACTIVE_HIGH>,  /* dout6 */
+		             <&axi_gpio_0 47 GPIO_ACTIVE_HIGH>,  /* dout7 */
+		             <&axi_gpio_1 20 GPIO_ACTIVE_HIGH>,  /* dout8 */
+		             <&axi_gpio_1 21 GPIO_ACTIVE_HIGH>,  /* dout9 */
+		             <&axi_gpio_1 22 GPIO_ACTIVE_HIGH>,  /* dout10 */
+		             <&axi_gpio_1 23 GPIO_ACTIVE_HIGH>,  /* dout11 */
+		             <&axi_gpio_1 44 GPIO_ACTIVE_HIGH>,  /* dout12 */
+		             <&axi_gpio_1 45 GPIO_ACTIVE_HIGH>,  /* dout13 */
+		             <&axi_gpio_1 46 GPIO_ACTIVE_HIGH>,  /* dout14 */
+		             <&axi_gpio_1 47 GPIO_ACTIVE_HIGH>,  /* dout15 */
+		             <&axi_gpio_2 20 GPIO_ACTIVE_HIGH>,  /* dout16 */
+		             <&axi_gpio_2 21 GPIO_ACTIVE_HIGH>,  /* dout17 */
+		             <&axi_gpio_2 22 GPIO_ACTIVE_HIGH>,  /* dout18 */
+		             <&axi_gpio_2 23 GPIO_ACTIVE_HIGH>,  /* dout19 */
+		             <&axi_gpio_2 44 GPIO_ACTIVE_HIGH>,  /* dout20 */
+		             <&axi_gpio_2 45 GPIO_ACTIVE_HIGH>,  /* dout21 */
+		             <&axi_gpio_2 46 GPIO_ACTIVE_HIGH>,  /* dout22 */
+		             <&axi_gpio_2 47 GPIO_ACTIVE_HIGH>,  /* dout23 */
+		             <&axi_gpio_3 20 GPIO_ACTIVE_HIGH>,  /* dout24 */
+		             <&axi_gpio_3 21 GPIO_ACTIVE_HIGH>,  /* dout25 */
+		             <&axi_gpio_3 22 GPIO_ACTIVE_HIGH>,  /* dout26 */
+		             <&axi_gpio_3 23 GPIO_ACTIVE_HIGH>,  /* dout27 */
+		             <&axi_gpio_3 44 GPIO_ACTIVE_HIGH>,  /* dout28 */
+		             <&axi_gpio_3 45 GPIO_ACTIVE_HIGH>,  /* dout29 */
+		             <&axi_gpio_3 46 GPIO_ACTIVE_HIGH>,  /* dout30 */
+		             <&axi_gpio_3 47 GPIO_ACTIVE_HIGH>;  /* dout31 */
+
+		/* DSTAT GPIOs (16 devices x 3 bits = 48 entries) - formula: (dev/2)*24 + 8 + (dev%2)*3 + bit */
+		dstat-gpios = <&axi_gpio_0 8 GPIO_ACTIVE_HIGH>,   /* dstat0[0] */
+		              <&axi_gpio_0 9 GPIO_ACTIVE_HIGH>,   /* dstat0[1] */
+		              <&axi_gpio_0 10 GPIO_ACTIVE_HIGH>,  /* dstat0[2] */
+		              <&axi_gpio_0 11 GPIO_ACTIVE_HIGH>,  /* dstat1[0] */
+		              <&axi_gpio_0 12 GPIO_ACTIVE_HIGH>,  /* dstat1[1] */
+		              <&axi_gpio_0 13 GPIO_ACTIVE_HIGH>,  /* dstat1[2] */
+		              <&axi_gpio_0 32 GPIO_ACTIVE_HIGH>,  /* dstat2[0] */
+		              <&axi_gpio_0 33 GPIO_ACTIVE_HIGH>,  /* dstat2[1] */
+		              <&axi_gpio_0 34 GPIO_ACTIVE_HIGH>,  /* dstat2[2] */
+		              <&axi_gpio_0 35 GPIO_ACTIVE_HIGH>,  /* dstat3[0] */
+		              <&axi_gpio_0 36 GPIO_ACTIVE_HIGH>,  /* dstat3[1] */
+		              <&axi_gpio_0 37 GPIO_ACTIVE_HIGH>,  /* dstat3[2] */
+		              <&axi_gpio_1 8 GPIO_ACTIVE_HIGH>,   /* dstat4[0] */
+		              <&axi_gpio_1 9 GPIO_ACTIVE_HIGH>,   /* dstat4[1] */
+		              <&axi_gpio_1 10 GPIO_ACTIVE_HIGH>,  /* dstat4[2] */
+		              <&axi_gpio_1 11 GPIO_ACTIVE_HIGH>,  /* dstat5[0] */
+		              <&axi_gpio_1 12 GPIO_ACTIVE_HIGH>,  /* dstat5[1] */
+		              <&axi_gpio_1 13 GPIO_ACTIVE_HIGH>,  /* dstat5[2] */
+		              <&axi_gpio_1 32 GPIO_ACTIVE_HIGH>,  /* dstat6[0] */
+		              <&axi_gpio_1 33 GPIO_ACTIVE_HIGH>,  /* dstat6[1] */
+		              <&axi_gpio_1 34 GPIO_ACTIVE_HIGH>,  /* dstat6[2] */
+		              <&axi_gpio_1 35 GPIO_ACTIVE_HIGH>,  /* dstat7[0] */
+		              <&axi_gpio_1 36 GPIO_ACTIVE_HIGH>,  /* dstat7[1] */
+		              <&axi_gpio_1 37 GPIO_ACTIVE_HIGH>,  /* dstat7[2] */
+		              <&axi_gpio_2 8 GPIO_ACTIVE_HIGH>,   /* dstat8[0] */
+		              <&axi_gpio_2 9 GPIO_ACTIVE_HIGH>,   /* dstat8[1] */
+		              <&axi_gpio_2 10 GPIO_ACTIVE_HIGH>,  /* dstat8[2] */
+		              <&axi_gpio_2 11 GPIO_ACTIVE_HIGH>,  /* dstat9[0] */
+		              <&axi_gpio_2 12 GPIO_ACTIVE_HIGH>,  /* dstat9[1] */
+		              <&axi_gpio_2 13 GPIO_ACTIVE_HIGH>,  /* dstat9[2] */
+		              <&axi_gpio_2 32 GPIO_ACTIVE_HIGH>,  /* dstat10[0] */
+		              <&axi_gpio_2 33 GPIO_ACTIVE_HIGH>,  /* dstat10[1] */
+		              <&axi_gpio_2 34 GPIO_ACTIVE_HIGH>,  /* dstat10[2] */
+		              <&axi_gpio_2 35 GPIO_ACTIVE_HIGH>,  /* dstat11[0] */
+		              <&axi_gpio_2 36 GPIO_ACTIVE_HIGH>,  /* dstat11[1] */
+		              <&axi_gpio_2 37 GPIO_ACTIVE_HIGH>,  /* dstat11[2] */
+		              <&axi_gpio_3 8 GPIO_ACTIVE_HIGH>,   /* dstat12[0] */
+		              <&axi_gpio_3 9 GPIO_ACTIVE_HIGH>,   /* dstat12[1] */
+		              <&axi_gpio_3 10 GPIO_ACTIVE_HIGH>,  /* dstat12[2] */
+		              <&axi_gpio_3 11 GPIO_ACTIVE_HIGH>,  /* dstat13[0] */
+		              <&axi_gpio_3 12 GPIO_ACTIVE_HIGH>,  /* dstat13[1] */
+		              <&axi_gpio_3 13 GPIO_ACTIVE_HIGH>,  /* dstat13[2] */
+		              <&axi_gpio_3 32 GPIO_ACTIVE_HIGH>,  /* dstat14[0] */
+		              <&axi_gpio_3 33 GPIO_ACTIVE_HIGH>,  /* dstat14[1] */
+		              <&axi_gpio_3 34 GPIO_ACTIVE_HIGH>,  /* dstat14[2] */
+		              <&axi_gpio_3 35 GPIO_ACTIVE_HIGH>,  /* dstat15[0] */
+		              <&axi_gpio_3 36 GPIO_ACTIVE_HIGH>,  /* dstat15[1] */
+		              <&axi_gpio_3 37 GPIO_ACTIVE_HIGH>;  /* dstat15[2] */
+
+		/* DCTL GPIOs (16 devices x 3 bits = 48 entries) - formula: (dev/2)*24 + (dev%2)*2 + dctl_bit_offsets[bit] */
+		/* dctl_bit_offsets = [0, 1, 14] */
+		dctl-gpios = <&axi_gpio_0 0 GPIO_ACTIVE_HIGH>,   /* dctl0[0] */
+		             <&axi_gpio_0 1 GPIO_ACTIVE_HIGH>,   /* dctl0[1] */
+		             <&axi_gpio_0 14 GPIO_ACTIVE_HIGH>,  /* dctl0[2] */
+		             <&axi_gpio_0 2 GPIO_ACTIVE_HIGH>,   /* dctl1[0] */
+		             <&axi_gpio_0 3 GPIO_ACTIVE_HIGH>,   /* dctl1[1] */
+		             <&axi_gpio_0 15 GPIO_ACTIVE_HIGH>,  /* dctl1[2] - adjusted to avoid conflict */
+		             <&axi_gpio_0 24 GPIO_ACTIVE_HIGH>,  /* dctl2[0] */
+		             <&axi_gpio_0 25 GPIO_ACTIVE_HIGH>,  /* dctl2[1] */
+		             <&axi_gpio_0 38 GPIO_ACTIVE_HIGH>,  /* dctl2[2] */
+		             <&axi_gpio_0 26 GPIO_ACTIVE_HIGH>,  /* dctl3[0] */
+		             <&axi_gpio_0 27 GPIO_ACTIVE_HIGH>,  /* dctl3[1] */
+		             <&axi_gpio_0 39 GPIO_ACTIVE_HIGH>,  /* dctl3[2] */
+		             <&axi_gpio_1 0 GPIO_ACTIVE_HIGH>,   /* dctl4[0] */
+		             <&axi_gpio_1 1 GPIO_ACTIVE_HIGH>,   /* dctl4[1] */
+		             <&axi_gpio_1 14 GPIO_ACTIVE_HIGH>,  /* dctl4[2] */
+		             <&axi_gpio_1 2 GPIO_ACTIVE_HIGH>,   /* dctl5[0] */
+		             <&axi_gpio_1 3 GPIO_ACTIVE_HIGH>,   /* dctl5[1] */
+		             <&axi_gpio_1 15 GPIO_ACTIVE_HIGH>,  /* dctl5[2] */
+		             <&axi_gpio_1 24 GPIO_ACTIVE_HIGH>,  /* dctl6[0] */
+		             <&axi_gpio_1 25 GPIO_ACTIVE_HIGH>,  /* dctl6[1] */
+		             <&axi_gpio_1 38 GPIO_ACTIVE_HIGH>,  /* dctl6[2] */
+		             <&axi_gpio_1 26 GPIO_ACTIVE_HIGH>,  /* dctl7[0] */
+		             <&axi_gpio_1 27 GPIO_ACTIVE_HIGH>,  /* dctl7[1] */
+		             <&axi_gpio_1 39 GPIO_ACTIVE_HIGH>,  /* dctl7[2] */
+		             <&axi_gpio_2 0 GPIO_ACTIVE_HIGH>,   /* dctl8[0] */
+		             <&axi_gpio_2 1 GPIO_ACTIVE_HIGH>,   /* dctl8[1] */
+		             <&axi_gpio_2 14 GPIO_ACTIVE_HIGH>,  /* dctl8[2] */
+		             <&axi_gpio_2 2 GPIO_ACTIVE_HIGH>,   /* dctl9[0] */
+		             <&axi_gpio_2 3 GPIO_ACTIVE_HIGH>,   /* dctl9[1] */
+		             <&axi_gpio_2 15 GPIO_ACTIVE_HIGH>,  /* dctl9[2] */
+		             <&axi_gpio_2 24 GPIO_ACTIVE_HIGH>,  /* dctl10[0] */
+		             <&axi_gpio_2 25 GPIO_ACTIVE_HIGH>,  /* dctl10[1] */
+		             <&axi_gpio_2 38 GPIO_ACTIVE_HIGH>,  /* dctl10[2] */
+		             <&axi_gpio_2 26 GPIO_ACTIVE_HIGH>,  /* dctl11[0] */
+		             <&axi_gpio_2 27 GPIO_ACTIVE_HIGH>,  /* dctl11[1] */
+		             <&axi_gpio_2 39 GPIO_ACTIVE_HIGH>,  /* dctl11[2] */
+		             <&axi_gpio_3 0 GPIO_ACTIVE_HIGH>,   /* dctl12[0] */
+		             <&axi_gpio_3 1 GPIO_ACTIVE_HIGH>,   /* dctl12[1] */
+		             <&axi_gpio_3 14 GPIO_ACTIVE_HIGH>,  /* dctl12[2] */
+		             <&axi_gpio_3 2 GPIO_ACTIVE_HIGH>,   /* dctl13[0] */
+		             <&axi_gpio_3 3 GPIO_ACTIVE_HIGH>,   /* dctl13[1] */
+		             <&axi_gpio_3 15 GPIO_ACTIVE_HIGH>,  /* dctl13[2] */
+		             <&axi_gpio_3 24 GPIO_ACTIVE_HIGH>,  /* dctl14[0] */
+		             <&axi_gpio_3 25 GPIO_ACTIVE_HIGH>,  /* dctl14[1] */
+		             <&axi_gpio_3 38 GPIO_ACTIVE_HIGH>,  /* dctl14[2] */
+		             <&axi_gpio_3 26 GPIO_ACTIVE_HIGH>,  /* dctl15[0] */
+		             <&axi_gpio_3 27 GPIO_ACTIVE_HIGH>,  /* dctl15[1] */
+		             <&axi_gpio_3 39 GPIO_ACTIVE_HIGH>;  /* dctl15[2] */
+
+		smon0-gpios = <&gpio0 72 GPIO_ACTIVE_HIGH>,
+			      <&gpio0 73 GPIO_ACTIVE_HIGH>,
+			      <&gpio0 74 GPIO_ACTIVE_HIGH>,
+			      <&gpio0 75 GPIO_ACTIVE_HIGH>,
+			      <&gpio0 76 GPIO_ACTIVE_HIGH>,
+			      <&gpio0 77 GPIO_ACTIVE_HIGH>,
+			      <&gpio0 78 GPIO_ACTIVE_HIGH>,
+			      <&gpio0 79 GPIO_ACTIVE_HIGH>,
+			      <&gpio0 80 GPIO_ACTIVE_HIGH>,
+			      <&gpio0 81 GPIO_ACTIVE_HIGH>,
+			      <&gpio0 82 GPIO_ACTIVE_HIGH>,
+			      <&gpio0 83 GPIO_ACTIVE_HIGH>,
+			      <&gpio0 84 GPIO_ACTIVE_HIGH>,
+			      <&gpio0 85 GPIO_ACTIVE_HIGH>,
+			      <&gpio0 86 GPIO_ACTIVE_HIGH>,
+			      <&gpio0 87 GPIO_ACTIVE_HIGH>;
+		smon-gpios = <&gpio0 62 GPIO_ACTIVE_HIGH>, /* error */
+			     <&gpio0 63 GPIO_ACTIVE_HIGH>, /* power */
+			     <&gpio0 64 GPIO_ACTIVE_HIGH>; /* run */
+
+		/* SMON4 GPIO (single input from PS GPIO) */
+		smon4-gpios = <&gpio0 61 GPIO_ACTIVE_HIGH>;
 	};
 
 	amba_pl: amba_pl {
@@ -428,8 +789,8 @@
 
 	gpio-poweroff {
 		compatible = "gpio-poweroff";
-		gpios = <&gpio0 102 GPIO_ACTIVE_HIGH>;
-		/* シャットダウン時にGPIO 102をHIGHに駆動して電源を切断 */
+		gpios = <&gpio0 104 GPIO_ACTIVE_HIGH>;
+		/* シャットダウン時にGPIO 104をHIGHに駆動して電源を切断 */
 		/* ハードウェアの仕様に応じてGPIO_ACTIVE_LOWに変更する必要がある場合があります */
 	};
 
@@ -512,7 +873,6 @@
 		/* SW線とCS線の数を設定 */
 		ti,num-sw = <7>;   /* SW0-SW6 */
 		ti,num-cs = <16>;   /* CS0-CS15 */
-		gpio-base = <2000>;
 	};
 };
 &axi_iic_3 {
@@ -524,7 +884,6 @@
 		/* SW線とCS線の数を設定 */
 		ti,num-sw = <7>;   /* SW0-SW6 */
 		ti,num-cs = <16>;   /* CS0-CS15 */
-		gpio-base = <2200>;
 	};
 };
 &intc {
