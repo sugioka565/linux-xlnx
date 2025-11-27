@@ -74,6 +74,7 @@
 	};
 	led_panel_0_0 {
 		compatible = "gpio-leds";
+		status = "disabled"; /* Disabled: using dio.c internal LED control */
 		out_a_0	{ gpios = <&lp5860t_0  0 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_0 0  GPIO_ACTIVE_HIGH>; };
 		out_b_0	{ gpios = <&lp5860t_0  1 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_0 1  GPIO_ACTIVE_HIGH>; };
 		rsw_0	{ gpios = <&lp5860t_0  2 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_0 8  GPIO_ACTIVE_HIGH>; };
@@ -113,6 +114,7 @@
 	};
 	led_panel_0_1 {
 		compatible = "gpio-leds";
+		status = "disabled"; /* Disabled: using dio.c internal LED control */
 		out_a_4	{ gpios = <&lp5860t_0 21 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_1 0  GPIO_ACTIVE_HIGH>; };
 		out_b_4	{ gpios = <&lp5860t_0 22 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_1 1  GPIO_ACTIVE_HIGH>; };
 		rsw_4	{ gpios = <&lp5860t_0 23 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_1 8  GPIO_ACTIVE_HIGH>; };
@@ -152,32 +154,38 @@
 	};
 	led_panel_0_2 {
 		compatible = "gpio-leds";
-		seg00_A	{ gpios = <&lp5860t_0  80 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 72 GPIO_ACTIVE_HIGH>; };
-		seg00_B	{ gpios = <&lp5860t_0  81 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 73 GPIO_ACTIVE_HIGH>; };
-		seg00_C	{ gpios = <&lp5860t_0  82 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 74 GPIO_ACTIVE_HIGH>; };
-		seg00_D	{ gpios = <&lp5860t_0  83 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 75 GPIO_ACTIVE_HIGH>; };
-		seg00_E	{ gpios = <&lp5860t_0  84 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 76 GPIO_ACTIVE_HIGH>; };
-		seg00_F	{ gpios = <&lp5860t_0  85 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 77 GPIO_ACTIVE_HIGH>; };
-		seg00_G	{ gpios = <&lp5860t_0  86 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 78 GPIO_ACTIVE_HIGH>; };
-		seg00_dt{ gpios = <&lp5860t_0  87 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 79 GPIO_ACTIVE_HIGH>; };
-		seg01_A	{ gpios = <&lp5860t_0  88 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 80 GPIO_ACTIVE_HIGH>; };
-		seg01_B	{ gpios = <&lp5860t_0  89 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 81 GPIO_ACTIVE_HIGH>; };
-		seg01_C	{ gpios = <&lp5860t_0  90 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 82 GPIO_ACTIVE_HIGH>; };
-		seg01_D	{ gpios = <&lp5860t_0  91 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 83 GPIO_ACTIVE_HIGH>; };
-		seg01_E	{ gpios = <&lp5860t_0  92 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 84 GPIO_ACTIVE_HIGH>; };
-		seg01_F	{ gpios = <&lp5860t_0  93 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 85 GPIO_ACTIVE_HIGH>; };
-		seg01_G	{ gpios = <&lp5860t_0  94 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 86 GPIO_ACTIVE_HIGH>; };
-		seg01_dt{ gpios = <&lp5860t_0  95 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 87 GPIO_ACTIVE_HIGH>; };
+		status = "okay"; /* Enabled: SMON0/SMON LED via gpio trigger */
+		seg00_A	{ gpios = <&lp5860t_0  80 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_8 0 GPIO_ACTIVE_HIGH>; };
+		seg00_B	{ gpios = <&lp5860t_0  81 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_8 1 GPIO_ACTIVE_HIGH>; };
+		seg00_C	{ gpios = <&lp5860t_0  82 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_8 2 GPIO_ACTIVE_HIGH>; };
+		seg00_D	{ gpios = <&lp5860t_0  83 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_8 3 GPIO_ACTIVE_HIGH>; };
+		seg00_E	{ gpios = <&lp5860t_0  84 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_8 4 GPIO_ACTIVE_HIGH>; };
+		seg00_F	{ gpios = <&lp5860t_0  85 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_8 5 GPIO_ACTIVE_HIGH>; };
+		seg00_G	{ gpios = <&lp5860t_0  86 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_8 6 GPIO_ACTIVE_HIGH>; };
+		seg00_dt{ gpios = <&lp5860t_0  87 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_8 7 GPIO_ACTIVE_HIGH>; };
+		seg01_A	{ gpios = <&lp5860t_0  88 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_8 8 GPIO_ACTIVE_HIGH>; };
+		seg01_B	{ gpios = <&lp5860t_0  89 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_8 9 GPIO_ACTIVE_HIGH>; };
+		seg01_C	{ gpios = <&lp5860t_0  90 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_8 10 GPIO_ACTIVE_HIGH>; };
+		seg01_D	{ gpios = <&lp5860t_0  91 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_8 11 GPIO_ACTIVE_HIGH>; };
+		seg01_E	{ gpios = <&lp5860t_0  92 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_8 12 GPIO_ACTIVE_HIGH>; };
+		seg01_F	{ gpios = <&lp5860t_0  93 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_8 13 GPIO_ACTIVE_HIGH>; };
+		seg01_G	{ gpios = <&lp5860t_0  94 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_8 14 GPIO_ACTIVE_HIGH>; };
+		seg01_dt{ gpios = <&lp5860t_0  95 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_8 15 GPIO_ACTIVE_HIGH>; };
+	};
+	led_panel_0_3 {
+		compatible = "gpio-leds";
+		status = "okay"; /* Disabled: using dio.c internal LED control */
 		eth00_1	{ gpios = <&lp5860t_0  96 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 57 GPIO_ACTIVE_HIGH>; };
 		eth00_2	{ gpios = <&lp5860t_0  97 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 58 GPIO_ACTIVE_HIGH>; };
 		eth01_1	{ gpios = <&lp5860t_0  98 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 59 GPIO_ACTIVE_HIGH>; };
 		eth01_2	{ gpios = <&lp5860t_0  99 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 60 GPIO_ACTIVE_HIGH>; };
-		error0	{ gpios = <&lp5860t_0 100 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 62 GPIO_ACTIVE_HIGH>; };
-		power0	{ gpios = <&lp5860t_0 101 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 63 GPIO_ACTIVE_HIGH>; };
-		run0	{ gpios = <&lp5860t_0 102 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 64 GPIO_ACTIVE_HIGH>; };
+		error0	{ gpios = <&lp5860t_0 100 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 69 GPIO_ACTIVE_HIGH>; };
+		power0	{ gpios = <&lp5860t_0 101 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 70 GPIO_ACTIVE_HIGH>; };
+		run0	{ gpios = <&lp5860t_0 102 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 71 GPIO_ACTIVE_HIGH>; };
 	};
 	led_panel_1_0 {
 		compatible = "gpio-leds";
+		status = "disabled"; /* Disabled: using dio.c internal LED control */
 		out_a_8	{ gpios = <&lp5860t_1  0 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_2 0  GPIO_ACTIVE_HIGH>; };
 		out_b_8	{ gpios = <&lp5860t_1  1 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_2 1  GPIO_ACTIVE_HIGH>; };
 		rsw_8	{ gpios = <&lp5860t_1  2 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_2 8  GPIO_ACTIVE_HIGH>; };
@@ -217,6 +225,7 @@
 	};
 	led_panel_1_1 {
 		compatible = "gpio-leds";
+		status = "disabled"; /* Disabled: using dio.c internal LED control */
 		out_a_12{ gpios = <&lp5860t_1 21 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_3 0  GPIO_ACTIVE_HIGH>; };
 		out_b_12{ gpios = <&lp5860t_1 22 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_3 1  GPIO_ACTIVE_HIGH>; };
 		rsw_12	{ gpios = <&lp5860t_1 23 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_3 8  GPIO_ACTIVE_HIGH>; };
@@ -256,29 +265,34 @@
 	};
 	led_panel_1_2 {
 		compatible = "gpio-leds";
-		seg10_A	{ gpios = <&lp5860t_1  80 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 88 GPIO_ACTIVE_HIGH>; };
-		seg10_B	{ gpios = <&lp5860t_1  81 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 89 GPIO_ACTIVE_HIGH>; };
-		seg10_C	{ gpios = <&lp5860t_1  82 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 90 GPIO_ACTIVE_HIGH>; };
-		seg10_D	{ gpios = <&lp5860t_1  83 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 91 GPIO_ACTIVE_HIGH>; };
-		seg10_E	{ gpios = <&lp5860t_1  84 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 92 GPIO_ACTIVE_HIGH>; };
-		seg10_F	{ gpios = <&lp5860t_1  85 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 93 GPIO_ACTIVE_HIGH>; };
-		seg10_G	{ gpios = <&lp5860t_1  86 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 94 GPIO_ACTIVE_HIGH>; };
-		seg10_dt{ gpios = <&lp5860t_1  87 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 95 GPIO_ACTIVE_HIGH>; };
-		seg11_A	{ gpios = <&lp5860t_1  88 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 96 GPIO_ACTIVE_HIGH>; };
-		seg11_B	{ gpios = <&lp5860t_1  89 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 97 GPIO_ACTIVE_HIGH>; };
-		seg11_C	{ gpios = <&lp5860t_1  90 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 98 GPIO_ACTIVE_HIGH>; };
-		seg11_D	{ gpios = <&lp5860t_1  91 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 99 GPIO_ACTIVE_HIGH>; };
-		seg11_E	{ gpios = <&lp5860t_1  92 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 100 GPIO_ACTIVE_HIGH>; };
-		seg11_F	{ gpios = <&lp5860t_1  93 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 101 GPIO_ACTIVE_HIGH>; };
-		seg11_G	{ gpios = <&lp5860t_1  94 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 102 GPIO_ACTIVE_HIGH>; };
-		seg11_dt{ gpios = <&lp5860t_1  95 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 103 GPIO_ACTIVE_HIGH>; };
+		status = "okay"; /* Disabled: using dio.c internal LED control */
+		seg10_A	{ gpios = <&lp5860t_1  80 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_8 16 GPIO_ACTIVE_HIGH>; };
+		seg10_B	{ gpios = <&lp5860t_1  81 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_8 17 GPIO_ACTIVE_HIGH>; };
+		seg10_C	{ gpios = <&lp5860t_1  82 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_8 18 GPIO_ACTIVE_HIGH>; };
+		seg10_D	{ gpios = <&lp5860t_1  83 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_8 19 GPIO_ACTIVE_HIGH>; };
+		seg10_E	{ gpios = <&lp5860t_1  84 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_8 20 GPIO_ACTIVE_HIGH>; };
+		seg10_F	{ gpios = <&lp5860t_1  85 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_8 21 GPIO_ACTIVE_HIGH>; };
+		seg10_G	{ gpios = <&lp5860t_1  86 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_8 22 GPIO_ACTIVE_HIGH>; };
+		seg10_dt{ gpios = <&lp5860t_1  87 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_8 23 GPIO_ACTIVE_HIGH>; };
+		seg11_A	{ gpios = <&lp5860t_1  88 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_8 24 GPIO_ACTIVE_HIGH>; };
+		seg11_B	{ gpios = <&lp5860t_1  89 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_8 25 GPIO_ACTIVE_HIGH>; };
+		seg11_C	{ gpios = <&lp5860t_1  90 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_8 26 GPIO_ACTIVE_HIGH>; };
+		seg11_D	{ gpios = <&lp5860t_1  91 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_8 27 GPIO_ACTIVE_HIGH>; };
+		seg11_E	{ gpios = <&lp5860t_1  92 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_8 28 GPIO_ACTIVE_HIGH>; };
+		seg11_F	{ gpios = <&lp5860t_1  93 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_8 29 GPIO_ACTIVE_HIGH>; };
+		seg11_G	{ gpios = <&lp5860t_1  94 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_8 30 GPIO_ACTIVE_HIGH>; };
+		seg11_dt{ gpios = <&lp5860t_1  95 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&axi_gpio_8 31 GPIO_ACTIVE_HIGH>; };
+	};
+	led_panel_1_3 {
+		compatible = "gpio-leds";
+		status = "okay"; /* Disabled: using dio.c internal LED control */
 		eth10_1	{ gpios = <&lp5860t_1  96 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 65 GPIO_ACTIVE_HIGH>; };
 		eth10_2	{ gpios = <&lp5860t_1  97 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 66 GPIO_ACTIVE_HIGH>; };
 		eth11_1	{ gpios = <&lp5860t_1  98 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 67 GPIO_ACTIVE_HIGH>; };
 		eth11_2	{ gpios = <&lp5860t_1  99 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 68 GPIO_ACTIVE_HIGH>; };
-		error1	{ gpios = <&lp5860t_1 100 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 69 GPIO_ACTIVE_HIGH>; };
-		power1	{ gpios = <&lp5860t_1 101 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 70 GPIO_ACTIVE_HIGH>; };
-		run1	{ gpios = <&lp5860t_1 102 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 71 GPIO_ACTIVE_HIGH>; };
+		error1	{ gpios = <&lp5860t_1 100 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 72 GPIO_ACTIVE_HIGH>; };
+		power1	{ gpios = <&lp5860t_1 101 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 73 GPIO_ACTIVE_HIGH>; };
+		run1	{ gpios = <&lp5860t_1 102 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 74 GPIO_ACTIVE_HIGH>; };
 	};
 
 	/* CCB04 DIO SMON Platform Device */
@@ -455,10 +469,7 @@
 		             <&axi_gpio_3 27 GPIO_ACTIVE_HIGH>,  /* dctl15[1] */
 		             <&axi_gpio_3 39 GPIO_ACTIVE_HIGH>;  /* dctl15[2] */
 
-		smon0-gpios = <&gpio0 72 GPIO_ACTIVE_HIGH>,
-			      <&gpio0 73 GPIO_ACTIVE_HIGH>,
-			      <&gpio0 74 GPIO_ACTIVE_HIGH>,
-			      <&gpio0 75 GPIO_ACTIVE_HIGH>,
+		smon0-gpios = <&gpio0 75 GPIO_ACTIVE_HIGH>,
 			      <&gpio0 76 GPIO_ACTIVE_HIGH>,
 			      <&gpio0 77 GPIO_ACTIVE_HIGH>,
 			      <&gpio0 78 GPIO_ACTIVE_HIGH>,
@@ -470,13 +481,168 @@
 			      <&gpio0 84 GPIO_ACTIVE_HIGH>,
 			      <&gpio0 85 GPIO_ACTIVE_HIGH>,
 			      <&gpio0 86 GPIO_ACTIVE_HIGH>,
-			      <&gpio0 87 GPIO_ACTIVE_HIGH>;
+			      <&gpio0 87 GPIO_ACTIVE_HIGH>,
+			      <&gpio0 88 GPIO_ACTIVE_HIGH>,
+			      <&gpio0 89 GPIO_ACTIVE_HIGH>,
+			      <&gpio0 90 GPIO_ACTIVE_HIGH>;
 		smon-gpios = <&gpio0 62 GPIO_ACTIVE_HIGH>, /* error */
 			     <&gpio0 63 GPIO_ACTIVE_HIGH>, /* power */
 			     <&gpio0 64 GPIO_ACTIVE_HIGH>; /* run */
 
 		/* SMON4 GPIO (single input from PS GPIO) */
 		smon4-gpios = <&gpio0 61 GPIO_ACTIVE_HIGH>;
+
+		/* LED output GPIOs on LP5860T for DIN state display */
+		din-led-gpios = <&lp5860t_0 48 GPIO_ACTIVE_HIGH>,  /* din0 */
+		                <&lp5860t_0 49 GPIO_ACTIVE_HIGH>,  /* din1 */
+		                <&lp5860t_0 50 GPIO_ACTIVE_HIGH>,  /* din2 */
+		                <&lp5860t_0 51 GPIO_ACTIVE_HIGH>,  /* din3 */
+		                <&lp5860t_0 52 GPIO_ACTIVE_HIGH>,  /* din4 */
+		                <&lp5860t_0 53 GPIO_ACTIVE_HIGH>,  /* din5 */
+		                <&lp5860t_0 54 GPIO_ACTIVE_HIGH>,  /* din6 */
+		                <&lp5860t_0 55 GPIO_ACTIVE_HIGH>,  /* din7 */
+		                <&lp5860t_0 56 GPIO_ACTIVE_HIGH>,  /* din8 */
+		                <&lp5860t_0 57 GPIO_ACTIVE_HIGH>,  /* din9 */
+		                <&lp5860t_0 58 GPIO_ACTIVE_HIGH>,  /* din10 */
+		                <&lp5860t_0 59 GPIO_ACTIVE_HIGH>,  /* din11 */
+		                <&lp5860t_0 60 GPIO_ACTIVE_HIGH>,  /* din12 */
+		                <&lp5860t_0 61 GPIO_ACTIVE_HIGH>,  /* din13 */
+		                <&lp5860t_0 62 GPIO_ACTIVE_HIGH>,  /* din14 */
+		                <&lp5860t_0 63 GPIO_ACTIVE_HIGH>,  /* din15 */
+		                <&lp5860t_1 48 GPIO_ACTIVE_HIGH>,  /* din16 */
+		                <&lp5860t_1 49 GPIO_ACTIVE_HIGH>,  /* din17 */
+		                <&lp5860t_1 50 GPIO_ACTIVE_HIGH>,  /* din18 */
+		                <&lp5860t_1 51 GPIO_ACTIVE_HIGH>,  /* din19 */
+		                <&lp5860t_1 52 GPIO_ACTIVE_HIGH>,  /* din20 */
+		                <&lp5860t_1 53 GPIO_ACTIVE_HIGH>,  /* din21 */
+		                <&lp5860t_1 54 GPIO_ACTIVE_HIGH>,  /* din22 */
+		                <&lp5860t_1 55 GPIO_ACTIVE_HIGH>,  /* din23 */
+		                <&lp5860t_1 56 GPIO_ACTIVE_HIGH>,  /* din24 */
+		                <&lp5860t_1 57 GPIO_ACTIVE_HIGH>,  /* din25 */
+		                <&lp5860t_1 58 GPIO_ACTIVE_HIGH>,  /* din26 */
+		                <&lp5860t_1 59 GPIO_ACTIVE_HIGH>,  /* din27 */
+		                <&lp5860t_1 60 GPIO_ACTIVE_HIGH>,  /* din28 */
+		                <&lp5860t_1 61 GPIO_ACTIVE_HIGH>,  /* din29 */
+		                <&lp5860t_1 62 GPIO_ACTIVE_HIGH>,  /* din30 */
+		                <&lp5860t_1 63 GPIO_ACTIVE_HIGH>;  /* din31 */
+
+		/* LED output GPIOs on LP5860T for DOUT state display */
+		dout-led-gpios = <&lp5860t_0 64 GPIO_ACTIVE_HIGH>,  /* dout0 */
+		                 <&lp5860t_0 65 GPIO_ACTIVE_HIGH>,  /* dout1 */
+		                 <&lp5860t_0 66 GPIO_ACTIVE_HIGH>,  /* dout2 */
+		                 <&lp5860t_0 67 GPIO_ACTIVE_HIGH>,  /* dout3 */
+		                 <&lp5860t_0 68 GPIO_ACTIVE_HIGH>,  /* dout4 */
+		                 <&lp5860t_0 69 GPIO_ACTIVE_HIGH>,  /* dout5 */
+		                 <&lp5860t_0 70 GPIO_ACTIVE_HIGH>,  /* dout6 */
+		                 <&lp5860t_0 71 GPIO_ACTIVE_HIGH>,  /* dout7 */
+		                 <&lp5860t_0 72 GPIO_ACTIVE_HIGH>,  /* dout8 */
+		                 <&lp5860t_0 73 GPIO_ACTIVE_HIGH>,  /* dout9 */
+		                 <&lp5860t_0 74 GPIO_ACTIVE_HIGH>,  /* dout10 */
+		                 <&lp5860t_0 75 GPIO_ACTIVE_HIGH>,  /* dout11 */
+		                 <&lp5860t_0 76 GPIO_ACTIVE_HIGH>,  /* dout12 */
+		                 <&lp5860t_0 77 GPIO_ACTIVE_HIGH>,  /* dout13 */
+		                 <&lp5860t_0 78 GPIO_ACTIVE_HIGH>,  /* dout14 */
+		                 <&lp5860t_0 79 GPIO_ACTIVE_HIGH>,  /* dout15 */
+		                 <&lp5860t_1 64 GPIO_ACTIVE_HIGH>,  /* dout16 */
+		                 <&lp5860t_1 65 GPIO_ACTIVE_HIGH>,  /* dout17 */
+		                 <&lp5860t_1 66 GPIO_ACTIVE_HIGH>,  /* dout18 */
+		                 <&lp5860t_1 67 GPIO_ACTIVE_HIGH>,  /* dout19 */
+		                 <&lp5860t_1 68 GPIO_ACTIVE_HIGH>,  /* dout20 */
+		                 <&lp5860t_1 69 GPIO_ACTIVE_HIGH>,  /* dout21 */
+		                 <&lp5860t_1 70 GPIO_ACTIVE_HIGH>,  /* dout22 */
+		                 <&lp5860t_1 71 GPIO_ACTIVE_HIGH>,  /* dout23 */
+		                 <&lp5860t_1 72 GPIO_ACTIVE_HIGH>,  /* dout24 */
+		                 <&lp5860t_1 73 GPIO_ACTIVE_HIGH>,  /* dout25 */
+		                 <&lp5860t_1 74 GPIO_ACTIVE_HIGH>,  /* dout26 */
+		                 <&lp5860t_1 75 GPIO_ACTIVE_HIGH>,  /* dout27 */
+		                 <&lp5860t_1 76 GPIO_ACTIVE_HIGH>,  /* dout28 */
+		                 <&lp5860t_1 77 GPIO_ACTIVE_HIGH>,  /* dout29 */
+		                 <&lp5860t_1 78 GPIO_ACTIVE_HIGH>,  /* dout30 */
+		                 <&lp5860t_1 79 GPIO_ACTIVE_HIGH>;  /* dout31 */
+
+		/* LED output GPIOs on LP5860T for DCTL state display (16 devices x 2 LEDs = out_a, out_b) */
+		dctl-led-gpios = <&lp5860t_0  0 GPIO_ACTIVE_HIGH>,  /* dctl0 out_a */
+		                 <&lp5860t_0  1 GPIO_ACTIVE_HIGH>,  /* dctl0 out_b */
+		                 <&lp5860t_0  5 GPIO_ACTIVE_HIGH>,  /* dctl1 out_a */
+		                 <&lp5860t_0  6 GPIO_ACTIVE_HIGH>,  /* dctl1 out_b */
+		                 <&lp5860t_0 10 GPIO_ACTIVE_HIGH>,  /* dctl2 out_a */
+		                 <&lp5860t_0 11 GPIO_ACTIVE_HIGH>,  /* dctl2 out_b */
+		                 <&lp5860t_0 16 GPIO_ACTIVE_HIGH>,  /* dctl3 out_a */
+		                 <&lp5860t_0 17 GPIO_ACTIVE_HIGH>,  /* dctl3 out_b */
+		                 <&lp5860t_0 21 GPIO_ACTIVE_HIGH>,  /* dctl4 out_a */
+		                 <&lp5860t_0 22 GPIO_ACTIVE_HIGH>,  /* dctl4 out_b */
+		                 <&lp5860t_0 26 GPIO_ACTIVE_HIGH>,  /* dctl5 out_a */
+		                 <&lp5860t_0 27 GPIO_ACTIVE_HIGH>,  /* dctl5 out_b */
+		                 <&lp5860t_0 32 GPIO_ACTIVE_HIGH>,  /* dctl6 out_a */
+		                 <&lp5860t_0 33 GPIO_ACTIVE_HIGH>,  /* dctl6 out_b */
+		                 <&lp5860t_0 37 GPIO_ACTIVE_HIGH>,  /* dctl7 out_a */
+		                 <&lp5860t_0 38 GPIO_ACTIVE_HIGH>,  /* dctl7 out_b */
+		                 <&lp5860t_1  0 GPIO_ACTIVE_HIGH>,  /* dctl8 out_a */
+		                 <&lp5860t_1  1 GPIO_ACTIVE_HIGH>,  /* dctl8 out_b */
+		                 <&lp5860t_1  5 GPIO_ACTIVE_HIGH>,  /* dctl9 out_a */
+		                 <&lp5860t_1  6 GPIO_ACTIVE_HIGH>,  /* dctl9 out_b */
+		                 <&lp5860t_1 10 GPIO_ACTIVE_HIGH>,  /* dctl10 out_a */
+		                 <&lp5860t_1 11 GPIO_ACTIVE_HIGH>,  /* dctl10 out_b */
+		                 <&lp5860t_1 16 GPIO_ACTIVE_HIGH>,  /* dctl11 out_a */
+		                 <&lp5860t_1 17 GPIO_ACTIVE_HIGH>,  /* dctl11 out_b */
+		                 <&lp5860t_1 21 GPIO_ACTIVE_HIGH>,  /* dctl12 out_a */
+		                 <&lp5860t_1 22 GPIO_ACTIVE_HIGH>,  /* dctl12 out_b */
+		                 <&lp5860t_1 26 GPIO_ACTIVE_HIGH>,  /* dctl13 out_a */
+		                 <&lp5860t_1 27 GPIO_ACTIVE_HIGH>,  /* dctl13 out_b */
+		                 <&lp5860t_1 32 GPIO_ACTIVE_HIGH>,  /* dctl14 out_a */
+		                 <&lp5860t_1 33 GPIO_ACTIVE_HIGH>,  /* dctl14 out_b */
+		                 <&lp5860t_1 37 GPIO_ACTIVE_HIGH>,  /* dctl15 out_a */
+		                 <&lp5860t_1 38 GPIO_ACTIVE_HIGH>;  /* dctl15 out_b */
+
+		/* LED output GPIOs on LP5860T for DSTAT state display (16 devices x 3 LEDs = rsw, msw1, msw2) */
+		dstat-led-gpios = <&lp5860t_0  2 GPIO_ACTIVE_HIGH>,  /* dstat0 rsw */
+		                  <&lp5860t_0  3 GPIO_ACTIVE_HIGH>,  /* dstat0 msw1 */
+		                  <&lp5860t_0  4 GPIO_ACTIVE_HIGH>,  /* dstat0 msw2 */
+		                  <&lp5860t_0  7 GPIO_ACTIVE_HIGH>,  /* dstat1 rsw */
+		                  <&lp5860t_0  8 GPIO_ACTIVE_HIGH>,  /* dstat1 msw1 */
+		                  <&lp5860t_0  9 GPIO_ACTIVE_HIGH>,  /* dstat1 msw2 */
+		                  <&lp5860t_0 12 GPIO_ACTIVE_HIGH>,  /* dstat2 rsw */
+		                  <&lp5860t_0 13 GPIO_ACTIVE_HIGH>,  /* dstat2 msw1 */
+		                  <&lp5860t_0 14 GPIO_ACTIVE_HIGH>,  /* dstat2 msw2 */
+		                  <&lp5860t_0 18 GPIO_ACTIVE_HIGH>,  /* dstat3 rsw */
+		                  <&lp5860t_0 19 GPIO_ACTIVE_HIGH>,  /* dstat3 msw1 */
+		                  <&lp5860t_0 20 GPIO_ACTIVE_HIGH>,  /* dstat3 msw2 */
+		                  <&lp5860t_0 23 GPIO_ACTIVE_HIGH>,  /* dstat4 rsw */
+		                  <&lp5860t_0 24 GPIO_ACTIVE_HIGH>,  /* dstat4 msw1 */
+		                  <&lp5860t_0 25 GPIO_ACTIVE_HIGH>,  /* dstat4 msw2 */
+		                  <&lp5860t_0 28 GPIO_ACTIVE_HIGH>,  /* dstat5 rsw */
+		                  <&lp5860t_0 29 GPIO_ACTIVE_HIGH>,  /* dstat5 msw1 */
+		                  <&lp5860t_0 30 GPIO_ACTIVE_HIGH>,  /* dstat5 msw2 */
+		                  <&lp5860t_0 34 GPIO_ACTIVE_HIGH>,  /* dstat6 rsw */
+		                  <&lp5860t_0 35 GPIO_ACTIVE_HIGH>,  /* dstat6 msw1 */
+		                  <&lp5860t_0 36 GPIO_ACTIVE_HIGH>,  /* dstat6 msw2 */
+		                  <&lp5860t_0 39 GPIO_ACTIVE_HIGH>,  /* dstat7 rsw */
+		                  <&lp5860t_0 40 GPIO_ACTIVE_HIGH>,  /* dstat7 msw1 */
+		                  <&lp5860t_0 41 GPIO_ACTIVE_HIGH>,  /* dstat7 msw2 */
+		                  <&lp5860t_1  2 GPIO_ACTIVE_HIGH>,  /* dstat8 rsw */
+		                  <&lp5860t_1  3 GPIO_ACTIVE_HIGH>,  /* dstat8 msw1 */
+		                  <&lp5860t_1  4 GPIO_ACTIVE_HIGH>,  /* dstat8 msw2 */
+		                  <&lp5860t_1  7 GPIO_ACTIVE_HIGH>,  /* dstat9 rsw */
+		                  <&lp5860t_1  8 GPIO_ACTIVE_HIGH>,  /* dstat9 msw1 */
+		                  <&lp5860t_1  9 GPIO_ACTIVE_HIGH>,  /* dstat9 msw2 */
+		                  <&lp5860t_1 12 GPIO_ACTIVE_HIGH>,  /* dstat10 rsw */
+		                  <&lp5860t_1 13 GPIO_ACTIVE_HIGH>,  /* dstat10 msw1 */
+		                  <&lp5860t_1 14 GPIO_ACTIVE_HIGH>,  /* dstat10 msw2 */
+		                  <&lp5860t_1 18 GPIO_ACTIVE_HIGH>,  /* dstat11 rsw */
+		                  <&lp5860t_1 19 GPIO_ACTIVE_HIGH>,  /* dstat11 msw1 */
+		                  <&lp5860t_1 20 GPIO_ACTIVE_HIGH>,  /* dstat11 msw2 */
+		                  <&lp5860t_1 23 GPIO_ACTIVE_HIGH>,  /* dstat12 rsw */
+		                  <&lp5860t_1 24 GPIO_ACTIVE_HIGH>,  /* dstat12 msw1 */
+		                  <&lp5860t_1 25 GPIO_ACTIVE_HIGH>,  /* dstat12 msw2 */
+		                  <&lp5860t_1 28 GPIO_ACTIVE_HIGH>,  /* dstat13 rsw */
+		                  <&lp5860t_1 29 GPIO_ACTIVE_HIGH>,  /* dstat13 msw1 */
+		                  <&lp5860t_1 30 GPIO_ACTIVE_HIGH>,  /* dstat13 msw2 */
+		                  <&lp5860t_1 34 GPIO_ACTIVE_HIGH>,  /* dstat14 rsw */
+		                  <&lp5860t_1 35 GPIO_ACTIVE_HIGH>,  /* dstat14 msw1 */
+		                  <&lp5860t_1 36 GPIO_ACTIVE_HIGH>,  /* dstat14 msw2 */
+		                  <&lp5860t_1 39 GPIO_ACTIVE_HIGH>,  /* dstat15 rsw */
+		                  <&lp5860t_1 40 GPIO_ACTIVE_HIGH>,  /* dstat15 msw1 */
+		                  <&lp5860t_1 41 GPIO_ACTIVE_HIGH>;  /* dstat15 msw2 */
 	};
 
 	amba_pl: amba_pl {
@@ -623,6 +789,37 @@
 			xlnx,tri-default = <0xffffffff>;
 			xlnx,name = "axi_gpio_3";
 			xlnx,all-inputs = <0>;
+		};
+		axi_gpio_8: gpio@81240000 {
+			#interrupt-cells = <2>;
+			interrupts = < 0 58 4 >;
+			xlnx,gpio-board-interface = "Custom";
+			compatible = "xlnx,axi-gpio-2.0" , "xlnx,xps-gpio-1.00.a";
+			xlnx,all-outputs = <0>;
+			#gpio-cells = <2>;
+			xlnx,gpio-width = <32>;
+			interrupt-parent = <&intc>;
+			xlnx,dout-default = <0x0>;
+			xlnx,is-dual = <0>;
+			xlnx,ip-name = "axi_gpio";
+			xlnx,tri-default-2 = <0xffffffff>;
+			reg = <0x81240000 0x10000>;
+			xlnx,all-inputs-2 = <0>;
+			clocks = <&clkc 15>;
+			xlnx,all-outputs-2 = <0>;
+			gpio-controller;
+			xlnx,interrupt-present = <1>;
+			xlnx,gpio2-board-interface = "Custom";
+			xlnx,edk-iptype = "PERIPHERAL";
+			xlnx,dout-default-2 = <0x0>;
+			status = "okay";
+			xlnx,gpio2-width = <32>;
+			clock-names = "s_axi_aclk";
+			interrupt-controller;
+			interrupt-names = "ip2intc_irpt";
+			xlnx,tri-default = <0xffffffff>;
+			xlnx,name = "axi_gpio_8";
+			xlnx,all-inputs = <1>;
 		};
 		axi_iic_0: i2c@40000000 {
 			single-master;
