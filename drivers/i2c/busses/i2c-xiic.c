@@ -471,7 +471,8 @@ static int xiic_setclk(struct xiic_i2c *i2c)
 	xiic_setreg32(i2c, XIIC_TBUF_REG_OFFSET, reg_val - 1);
 
 	/* THDDAT */
-	xiic_setreg32(i2c, XIIC_THDDAT_REG_OFFSET, 1);
+	reg_val = (timing_reg_values[index].tsudat * clk_in_mhz) / 1000;
+	xiic_setreg32(i2c, XIIC_THDDAT_REG_OFFSET, reg_val - 1);
 
 	return 0;
 }
