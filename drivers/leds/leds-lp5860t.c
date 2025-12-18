@@ -123,6 +123,9 @@
 
 #define LP5860T_DEFAULT_DOT_CURRENT 0x06  /* Default dot current setting (100mA * 6/255) */
 
+/* Number of ON/OFF registers (0x43-0x63) */
+#define LP5860T_NUM_ONOFF_REGS 33
+
 struct lp5860t_chip {
     struct i2c_client *client;
     struct regmap *regmap;
@@ -134,7 +137,16 @@ struct lp5860t_chip {
     int gpio_base;  /* GPIO base number (-1 for dynamic allocation) */
     bool enabled;
     u8 dot_current[LP5860T_MAX_LEDS];  /* Per-LED dot current values */
+    int chip_index; /* Index in global chip array */
+    int test_mode;  /* Test mode: 0=normal, 1=all_on, 2=all_off (ignores GPIO writes) */
+    u8 saved_onoff_regs[LP5860T_NUM_ONOFF_REGS];  /* Saved ON/OFF registers for test mode restore */
 };
+
+/* Global chip array for test mode access */
+#define LP5860T_MAX_CHIPS 4
+static struct lp5860t_chip *lp5860t_chips[LP5860T_MAX_CHIPS];
+static int lp5860t_chip_count = 0;
+static DEFINE_MUTEX(lp5860t_chips_lock);
 
 /*
  * LP5860T I2C Register Access Functions
@@ -314,6 +326,10 @@ static void lp5860t_gpio_set(struct gpio_chip *gc, unsigned offset, int value)
     int ret;
 
     if (offset >= chip->num_leds)
+        return;
+
+    /* Skip GPIO writes when in test mode (all_on or all_off) */
+    if (chip->test_mode != 0)
         return;
 
     lp5860t_index_to_sw_cs(chip, offset, &sw, &cs);
@@ -639,6 +655,18 @@ static int lp5860t_probe(struct i2c_client *client)
         return ret;
     }
 
+    /* Register chip in global array for test mode access */
+    mutex_lock(&lp5860t_chips_lock);
+    if (lp5860t_chip_count < LP5860T_MAX_CHIPS) {
+        chip->chip_index = lp5860t_chip_count;
+        lp5860t_chips[lp5860t_chip_count] = chip;
+        lp5860t_chip_count++;
+    } else {
+        chip->chip_index = -1;
+        dev_warn(dev, "Maximum number of LP5860T chips reached, test mode disabled for this chip\n");
+    }
+    mutex_unlock(&lp5860t_chips_lock);
+
     dev_info(dev, "LP5860T GPIO driver initialized (SW:%d, CS:%d, GPIOs:%d)\n",
              chip->num_sw, chip->num_cs, chip->num_leds);
 
@@ -648,6 +676,14 @@ static int lp5860t_probe(struct i2c_client *client)
 static void lp5860t_remove(struct i2c_client *client)
 {
     struct lp5860t_chip *chip = i2c_get_clientdata(client);
+
+    /* Unregister chip from global array */
+    mutex_lock(&lp5860t_chips_lock);
+    if (chip->chip_index >= 0 && chip->chip_index < LP5860T_MAX_CHIPS) {
+        lp5860t_chips[chip->chip_index] = NULL;
+        /* Note: chip_count is not decremented to maintain indices */
+    }
+    mutex_unlock(&lp5860t_chips_lock);
 
     /* デバイスを無効化 */
     chip->enabled = false;
@@ -686,6 +722,86 @@ static int lp5860t_resume(struct device *dev)
     return lp5860t_init_device(chip);
 }
 #endif
+
+/**
+ * lp5860t_set_test_mode - Set LED test mode for all chips
+ * @mode: 0=normal (restore), 1=all_on, 2=all_off
+ *
+ * Returns: 0 on success, negative error code on failure
+ */
+int lp5860t_set_test_mode(int mode);
+int lp5860t_set_test_mode(int mode)
+{
+    int i, j, ret = 0;
+    u8 val;
+    unsigned int reg_val;
+
+    mutex_lock(&lp5860t_chips_lock);
+
+    for (i = 0; i < lp5860t_chip_count; i++) {
+        struct lp5860t_chip *chip = lp5860t_chips[i];
+        if (!chip || !chip->enabled)
+            continue;
+
+        mutex_lock(&chip->lock);
+
+        if (mode == 0) {
+            /* Normal mode: restore saved ON/OFF registers */
+            for (j = 0; j < LP5860T_NUM_ONOFF_REGS; j++) {
+                ret = regmap_write(chip->regmap, LP5860T_REG_DOT_ONOFF_BASE + j,
+                                   chip->saved_onoff_regs[j]);
+                if (ret < 0) {
+                    dev_err(&chip->client->dev, "Failed to restore ON/OFF register\n");
+                    goto unlock_chip;
+                }
+            }
+            /* Clear test_mode flag after restoring to allow GPIO writes */
+            chip->test_mode = 0;
+        } else {
+            /* Entering test mode: save current ON/OFF registers if not already in test mode */
+            if (chip->test_mode == 0) {
+                for (j = 0; j < LP5860T_NUM_ONOFF_REGS; j++) {
+                    ret = regmap_read(chip->regmap, LP5860T_REG_DOT_ONOFF_BASE + j, &reg_val);
+                    if (ret < 0) {
+                        dev_err(&chip->client->dev, "Failed to save ON/OFF register\n");
+                        goto unlock_chip;
+                    }
+                    chip->saved_onoff_regs[j] = (u8)reg_val;
+                }
+            }
+
+            /* Set test_mode flag to block GPIO writes */
+            chip->test_mode = mode;
+
+            /* Test mode: set all ON/OFF registers to 0xFF (all on) or 0x00 (all off) */
+            val = (mode == 1) ? 0xFF : 0x00;
+            for (j = 0; j < LP5860T_NUM_ONOFF_REGS; j++) {
+                ret = regmap_write(chip->regmap, LP5860T_REG_DOT_ONOFF_BASE + j, val);
+                if (ret < 0) {
+                    dev_err(&chip->client->dev, "Failed to set test mode ON/OFF register\n");
+                    goto unlock_chip;
+                }
+            }
+        }
+
+unlock_chip:
+        mutex_unlock(&chip->lock);
+        if (ret < 0)
+            break;
+    }
+
+    mutex_unlock(&lp5860t_chips_lock);
+    return ret;
+}
+EXPORT_SYMBOL_GPL(lp5860t_set_test_mode);
+
+/* Exported symbol for module dependency - dio.ko requires lp5860t.ko */
+bool lp5860t_is_available(void);
+bool lp5860t_is_available(void)
+{
+    return true;
+}
+EXPORT_SYMBOL_GPL(lp5860t_is_available);
 
 static const struct dev_pm_ops lp5860t_pm_ops = {
     SET_SYSTEM_SLEEP_PM_OPS(lp5860t_suspend, lp5860t_resume)
