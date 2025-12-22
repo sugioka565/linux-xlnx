@@ -19,12 +19,9 @@
 		i2c2 = &axi_iic_2;
 		i2c3 = &axi_iic_3;
 		serial0 = &uart0;
+		/* uart1(ttyPS?) には alias を設定しなければエラーとなる */
 		serial1 = &uart1;
-		serial2 = &axi_rs485_0;
-		serial3 = &axi_rs485_1;
-		serial4 = &axi_rs485_2;
-		serial5 = &axi_rs485_3;
-		serial6 = &axi_uart16550_0;
+		/* axi_rs485(ns16550) には alias を設定しなければ自動的にttyS0から順に割り当てられる */
 		spi0 = &qspi;
 		flash0 = &flash0;
 	};
@@ -43,50 +40,6 @@
 	chosen {
 		bootargs = "console=ttyPS0,115200 root=/dev/mmcblk1p1 rw rootwait";
 		stdout-path = "serial0:115200n8";
-	};
-	dipswitch {
-		compatible = "gpio-keys";
-		status = "okay";
-		sw1 {
-			label = "DIPSW1";
-			gpios = <&gpio0 110 GPIO_ACTIVE_HIGH>;
-			linux,code = <KEY_1>;
-		};
-		sw2 {
-			label = "DIPSW2";
-			gpios = <&gpio0 111 GPIO_ACTIVE_HIGH>;
-			linux,code = <KEY_2>;
-		};
-		sw3 {
-			label = "DIPSW3";
-			gpios = <&gpio0 112 GPIO_ACTIVE_HIGH>;
-			linux,code = <KEY_3>;
-		};
-		sw4 {
-			label = "DIPSW4";
-			gpios = <&gpio0 113 GPIO_ACTIVE_HIGH>;
-			linux,code = <KEY_4>;
-		};
-		sw5 {
-			label = "DIPSW5";
-			gpios = <&gpio0 114 GPIO_ACTIVE_HIGH>;
-			linux,code = <KEY_5>;
-		};
-		sw6 {
-			label = "DIPSW6";
-			gpios = <&gpio0 115 GPIO_ACTIVE_HIGH>;
-			linux,code = <KEY_6>;
-		};
-		sw7 {
-			label = "DIPSW7";
-			gpios = <&gpio0 116 GPIO_ACTIVE_HIGH>;
-			linux,code = <KEY_7>;
-		};
-		sw8 {
-			label = "DIPSW8";
-			gpios = <&gpio0 117 GPIO_ACTIVE_HIGH>;
-			linux,code = <KEY_8>;
-		};
 	};
 	onboard_leds {
 		compatible = "gpio-leds";
@@ -261,7 +214,7 @@
 		eth01_1	{ gpios = <&lp5860t_0  99 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 59 GPIO_ACTIVE_HIGH>; };
 		eth01_2	{ gpios = <&lp5860t_0  98 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 60 GPIO_ACTIVE_HIGH>; };
 		error0	{ gpios = <&lp5860t_0 100 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 69 GPIO_ACTIVE_HIGH>; };
-		power0	{ gpios = <&lp5860t_0 101 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 70 GPIO_ACTIVE_HIGH>; };
+		power0	{ gpios = <&lp5860t_0 101 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 70 GPIO_ACTIVE_LOW>; };
 		run0	{ gpios = <&lp5860t_0 102 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 71 GPIO_ACTIVE_HIGH>; };
 	};
 	led_panel_1_0 {
@@ -372,7 +325,7 @@
 		eth11_1	{ gpios = <&lp5860t_1  99 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 67 GPIO_ACTIVE_HIGH>; };
 		eth11_2	{ gpios = <&lp5860t_1  98 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 68 GPIO_ACTIVE_HIGH>; };
 		error1	{ gpios = <&lp5860t_1 100 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 72 GPIO_ACTIVE_HIGH>; };
-		power1	{ gpios = <&lp5860t_1 101 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 73 GPIO_ACTIVE_HIGH>; };
+		power1	{ gpios = <&lp5860t_1 101 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 73 GPIO_ACTIVE_LOW>; };
 		run1	{ gpios = <&lp5860t_1 102 GPIO_ACTIVE_HIGH>; linux,default-trigger = "gpio"; trigger-sources = <&gpio0 74 GPIO_ACTIVE_HIGH>; };
 	};
 
@@ -567,11 +520,20 @@
 			      <&gpio0 89 GPIO_ACTIVE_HIGH>,
 			      <&gpio0 90 GPIO_ACTIVE_HIGH>;
 		smon-gpios = <&gpio0 64 GPIO_ACTIVE_HIGH>, /* run */
-			     <&gpio0 63 GPIO_ACTIVE_HIGH>, /* power */
+			     <&gpio0 63 GPIO_ACTIVE_LOW>,  /* power */
 			     <&gpio0 62 GPIO_ACTIVE_HIGH>; /* error */
 
 		/* SMON4 GPIO (single input from PS GPIO) */
 		smon4-gpios = <&gpio0 61 GPIO_ACTIVE_HIGH>;
+		/* SMON5 GPIO (dipswitch input from PS GPIO) */
+		smon5-gpios = <&gpio0 110 GPIO_ACTIVE_HIGH>,
+			     <&gpio0 111 GPIO_ACTIVE_HIGH>,
+			     <&gpio0 112 GPIO_ACTIVE_HIGH>,
+			     <&gpio0 113 GPIO_ACTIVE_HIGH>,
+			     <&gpio0 114 GPIO_ACTIVE_HIGH>,
+			     <&gpio0 115 GPIO_ACTIVE_HIGH>,
+			     <&gpio0 116 GPIO_ACTIVE_HIGH>,
+			     <&gpio0 117 GPIO_ACTIVE_HIGH>;
 
 		/* LED output GPIOs on LP5860T for DIN state display */
 		din-led-gpios = <&lp5860t_0 48 GPIO_ACTIVE_HIGH>,  /* din0 */
