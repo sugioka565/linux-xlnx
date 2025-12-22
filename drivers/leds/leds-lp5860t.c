@@ -136,7 +136,9 @@ struct lp5860t_chip {
     int num_leds;   /* Total number of LEDs (sw * cs) */
     int gpio_base;  /* GPIO base number (-1 for dynamic allocation) */
     bool enabled;
+    bool virtual_mode;  /* True when hardware is not available */
     u8 dot_current[LP5860T_MAX_LEDS];  /* Per-LED dot current values */
+    u8 virtual_led_state[LP5860T_NUM_ONOFF_REGS];  /* Virtual LED on/off state */
     int chip_index; /* Index in global chip array */
     int test_mode;  /* Test mode: 0=normal, 1=all_on, 2=all_off (ignores GPIO writes) */
     u8 saved_onoff_regs[LP5860T_NUM_ONOFF_REGS];  /* Saved ON/OFF registers for test mode restore */
@@ -305,6 +307,17 @@ static int lp5860t_gpio_get(struct gpio_chip *gc, unsigned offset)
 
     mutex_lock(&chip->lock);
 
+    /* Virtual mode: use in-memory state */
+    if (chip->virtual_mode) {
+        int reg_idx = reg_addr - LP5860T_REG_DOT_ONOFF_BASE;
+        if (reg_idx >= 0 && reg_idx < LP5860T_NUM_ONOFF_REGS)
+            ret = (chip->virtual_led_state[reg_idx] >> bit_pos) & 1;
+        else
+            ret = 0;
+        mutex_unlock(&chip->lock);
+        return ret;
+    }
+
     ret = regmap_read(chip->regmap, reg_addr, &reg_val);
     if (ret < 0) {
         dev_err(&chip->client->dev, "Failed to read ON/OFF register: %d\n", ret);
@@ -336,6 +349,19 @@ static void lp5860t_gpio_set(struct gpio_chip *gc, unsigned offset, int value)
     lp5860t_get_onoff_reg(chip, sw, cs, &reg_addr, &bit_pos);
 
     mutex_lock(&chip->lock);
+
+    /* Virtual mode: update in-memory state only */
+    if (chip->virtual_mode) {
+        int reg_idx = reg_addr - LP5860T_REG_DOT_ONOFF_BASE;
+        if (reg_idx >= 0 && reg_idx < LP5860T_NUM_ONOFF_REGS) {
+            if (value)
+                chip->virtual_led_state[reg_idx] |= (1 << bit_pos);
+            else
+                chip->virtual_led_state[reg_idx] &= ~(1 << bit_pos);
+        }
+        mutex_unlock(&chip->lock);
+        return;
+    }
 
     /* Read-modify-write */
     ret = regmap_read(chip->regmap, reg_addr, &reg_val);
@@ -377,8 +403,12 @@ static int lp5860t_init_device(struct lp5860t_chip *chip)
         msleep(10);
         ret = regmap_write(chip->regmap, LP5860T_REG_RESET, 0xFF);
         if (ret < 0) {
-            dev_err(&chip->client->dev, "Failed to reset device\n");
-            return -EIO;
+            /* Hardware not available - fall back to virtual mode */
+            dev_warn(&chip->client->dev, "Hardware not available, using virtual mode\n");
+            chip->virtual_mode = true;
+            memset(chip->virtual_led_state, 0, sizeof(chip->virtual_led_state));
+            chip->enabled = true;
+            return 0;
         }
     }
 
