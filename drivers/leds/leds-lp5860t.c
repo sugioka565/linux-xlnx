@@ -770,7 +770,7 @@ int lp5860t_set_test_mode(int mode)
 
     for (i = 0; i < lp5860t_chip_count; i++) {
         struct lp5860t_chip *chip = lp5860t_chips[i];
-        if (!chip || !chip->enabled)
+        if (!chip || !chip->enabled || chip->virtual_mode)
             continue;
 
         mutex_lock(&chip->lock);
