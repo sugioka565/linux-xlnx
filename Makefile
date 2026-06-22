@@ -10,6 +10,10 @@ NAME = Curry Ramen
 # More info can be located in ./README
 # Comments in this file are targeted only to the developer, do not
 # expect to learn how to build the kernel reading this file.
+ARCH = arm
+CROSS_COMPILE = arm-linux-gnueabihf-
+INSTALL_MOD_PATH ?= $(shell pwd)/rootfs
+export INSTALL_MOD_PATH
 
 $(if $(filter __%, $(MAKECMDGOALS)), \
 	$(error targets prefixed with '__' are only for internal use))

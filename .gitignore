@@ -177,3 +177,4 @@ scripts/conmakehash
 scripts/kconfig/qconf.moc
 scripts/pnmtologo
 scripts/sortextable
+/rootfs
