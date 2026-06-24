@@ -34,7 +34,7 @@
 			no-map;
 			reg = <0 0x10000000 0 0x10000000>; // 256MB
 		};
-		display_reserved: framebuffer@70000000 {
+		display_reserved: display_reserved@70000000 {
 			compatible = "shared-dma-pool";
 			no-map;
 			reg = <0 0x70000000 0 0x00800000>; // 8MB
@@ -115,9 +115,9 @@
 	status = "okay";
 	phy-names = "dp-phy0", "dp-phy1";
 	phys = <&psgtr 1 PHY_TYPE_DP 0 1>, <&psgtr 0 PHY_TYPE_DP 1 1>;
-        clocks = <&dp_aclk>, <&zynqmp_clk DP_AUDIO_REF>, <&zynqmp_clk DP_VIDEO_REF>; //, <&video_clk_wiz>;
-        clock-names = "dp_apb_clk", "dp_aud_clk", "dp_vtc_pixel_clk_in"; //, "dp_live_video_in_clk";
-	assigned-clock-rates = <27000000>, <25000000>, <300000000>; //, <262750170>;
+	// clocks = <&dp_aclk>, <&zynqmp_clk DP_AUDIO_REF>, <&zynqmp_clk DP_VIDEO_REF>;
+	// clock-names = "dp_apb_clk", "dp_aud_clk", "dp_vtc_pixel_clk_in";
+	assigned-clock-rates = <27000000>, <25000000>, <300000000>;
 };
 
 &zynqmp_dpdma {
